@@ -58,4 +58,10 @@ spec: `buildMeetings` (skip rules, dedup, room, attendees), `cleanDescription`, 
 `complicationContent` / `complicationTransitions`, the detail-view formatters, and `fitToBudget`.
 The apps only map Android types in and out.
 
+On the phone, `CalendarReader` maps `CalendarContract` cursors to `:shared` types, and `SyncWorker`
+(WorkManager: app open, toggle changes, *Sync now*, and every 15 minutes) runs `sync()`. That reads
+the included calendars, builds the snapshot, sends it, and appends to the debug log (DataStore, last
+100 attempts). Calendar toggles are stored only for calendars the user changed, so new calendars get
+the default: on for each account's own calendar, and only if it is synced.
+
 [nix-direnv]: https://github.com/nix-community/nix-direnv

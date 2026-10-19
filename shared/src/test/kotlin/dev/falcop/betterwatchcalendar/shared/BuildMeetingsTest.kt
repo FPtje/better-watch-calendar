@@ -132,4 +132,32 @@ class BuildMeetingsTest :
       build(instances, meetingAttendees(1) + meetingAttendees(2)).map { it.start } shouldBe
         listOf(at(9).toEpochMilli(), at(15).toEpochMilli())
     }
+
+    test("the report counts meetings per account, skips and duplicates") {
+      val instances =
+        listOf(
+          instance(1, calendar = work, uid = "shared"),
+          instance(2, calendar = personal, uid = "shared"),
+          instance(3, calendar = work, begin = at(11)),
+          instance(4, calendar = work, allDay = true),
+          instance(5, calendar = work),
+        )
+      val attendees =
+        meetingAttendees(1, work) +
+          meetingAttendees(2, personal) +
+          meetingAttendees(3) +
+          meetingAttendees(4)
+      val report = buildReport(listOf(work, personal), instances, attendees)
+
+      report.meetings.map { it.accountName } shouldContainExactly
+        listOf("me@gmail.example", "me@work.example")
+      report.perAccount shouldBe mapOf("me@work.example" to 1, "me@gmail.example" to 1)
+      report.skipped shouldBe mapOf(SkipReason.AllDay to 1, SkipReason.NoOtherAttendees to 1)
+      report.duplicates shouldBe 1
+    }
+
+    test("an included account without meetings is reported with zero") {
+      buildReport(listOf(work, personal), emptyList(), emptyList()).perAccount shouldBe
+        mapOf("me@work.example" to 0, "me@gmail.example" to 0)
+    }
   })

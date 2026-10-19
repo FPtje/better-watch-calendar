@@ -33,25 +33,59 @@ fun buildMeetings(
   calendars: List<RawCalendar>,
   instances: List<RawInstance>,
   attendees: List<RawAttendee>,
-): List<Meeting> {
+): List<Meeting> = buildReport(calendars, instances, attendees).meetings.map { it.meeting }
+
+/** A built meeting plus the account whose copy survived deduplication. */
+data class SourcedMeeting(val meeting: Meeting, val accountName: String)
+
+/** [buildMeetings] with the counts the phone's debug log shows. */
+data class BuildReport(
+  val meetings: List<SourcedMeeting>,
+  /** Every account in the input calendars, including those left with no meetings. */
+  val perAccount: Map<String, Int>,
+  val skipped: Map<SkipReason, Int>,
+  /** Copies of an invite that another account already contributed. */
+  val duplicates: Int,
+)
+
+fun buildReport(
+  calendars: List<RawCalendar>,
+  instances: List<RawInstance>,
+  attendees: List<RawAttendee>,
+): BuildReport {
   val calendarsById = calendars.associateBy { it.id }
   val attendeesByEvent = attendees.groupBy { it.eventId }
-  return instances
-    .mapNotNull { instance ->
-      calendarsById[instance.calendarId]?.let { calendar ->
-        Candidate(instance, calendar, attendeesByEvent[instance.eventId].orEmpty())
-      }
+  val candidates = instances.mapNotNull { instance ->
+    calendarsById[instance.calendarId]?.let { calendar ->
+      Candidate(instance, calendar, attendeesByEvent[instance.eventId].orEmpty())
     }
-    .filter { skipReason(it.instance, it.calendar, it.attendees) == null }
-    // Deduplication keeps the first copy, so the account order decides which calendar wins.
-    .sortedWith(
-      compareBy<Candidate, String>(String.CASE_INSENSITIVE_ORDER) { it.calendar.accountName }
-        .thenBy { it.calendar.id.value }
-        .thenBy { it.instance.begin }
-    )
-    .distinctBy { it.dedupKey }
-    .map { it.toMeeting() }
-    .sortedWith(MeetingOrder)
+  }
+  val (kept, skipped) =
+    candidates
+      .map { it to skipReason(it.instance, it.calendar, it.attendees) }
+      .partition { it.second == null }
+  val unique =
+    kept
+      .map { it.first }
+      // Deduplication keeps the first copy, so the account order decides which calendar wins.
+      .sortedWith(
+        compareBy<Candidate, String>(String.CASE_INSENSITIVE_ORDER) { it.calendar.accountName }
+          .thenBy { it.calendar.id.value }
+          .thenBy { it.instance.begin }
+      )
+      .distinctBy { it.dedupKey }
+  val meetings =
+    unique
+      .map { SourcedMeeting(it.toMeeting(), it.calendar.accountName) }
+      .sortedWith(compareBy(MeetingOrder) { it.meeting })
+  return BuildReport(
+    meetings = meetings,
+    perAccount =
+      calendars.associate { it.accountName to 0 } +
+        meetings.groupingBy { it.accountName }.eachCount(),
+    skipped = skipped.groupingBy { checkNotNull(it.second) }.eachCount(),
+    duplicates = kept.size - unique.size,
+  )
 }
 
 /** Shown when an event has no title, matching Google Calendar. */

@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.detekt)
 }
 
@@ -37,7 +38,11 @@ android {
 
 kotlin {
   jvmToolchain(libs.versions.jvmToolchain.get().toInt())
-  compilerOptions { jvmTarget = JvmTarget.fromTarget(libs.versions.jvmTarget.get()) }
+  compilerOptions {
+    jvmTarget = JvmTarget.fromTarget(libs.versions.jvmTarget.get())
+    // The debug log is stored as ProtoBuf, which is still marked experimental.
+    optIn.add("kotlinx.serialization.ExperimentalSerializationApi")
+  }
 }
 
 dependencies {
@@ -50,6 +55,10 @@ dependencies {
   implementation(libs.compose.material3)
   implementation(libs.compose.ui.tooling.preview)
   debugImplementation(libs.compose.ui.tooling)
+
+  implementation(libs.androidx.work.runtime.ktx)
+  implementation(libs.androidx.datastore)
+  implementation(libs.androidx.datastore.preferences)
 
   implementation(libs.play.services.wearable)
   implementation(libs.kotlinx.coroutines.android)
