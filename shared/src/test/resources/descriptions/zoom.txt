@@ -1,0 +1,31 @@
+Every quarter we look back at the OKRs and introduce the ones for Q4!
+──────────
+
+Jane Doe is inviting you to a scheduled Zoom meeting.
+
+Join Zoom Meeting
+https://us02web.zoom.us/j/81234567890?pwd=ZW12ckhSc25EZTNuaDVnM0VBQStmZz09
+
+Meeting ID: 812 3456 7890
+Passcode: 123456
+One tap mobile
++12532158782,,81234567890#,,,,*123456# US (Tacoma)
++13462487799,,81234567890#,,,,*123456# US (Houston)
+
+Dial by your location
+        +1 253 215 8782 US (Tacoma)
+        +1 346 248 7799 US (Houston)
+        +1 669 900 6833 US (San Jose)
+Meeting ID: 812 3456 7890
+Find your local number: https://us02web.zoom.us/u/kAbCdEf
+
+Join by SIP
+• 81234567890@zoomcrc.com
+
+Join by H.323
+• 162.255.37.11 (US West)
+• 162.255.36.11 (US East)
+
+
+
+──────────

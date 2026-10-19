@@ -99,12 +99,14 @@ The same meeting can appear in more than one account or calendar, for example wh
 
 **Description** is cleaned as follows. Google sync may store HTML in this field.
 
-1. Convert HTML to plain text: `<br>`, `<p>`, and `<li>` become newlines, all other tags are stripped, and entities are decoded.
+1. Convert HTML to plain text: `<br>` becomes a newline, `<p>` paragraphs are separated by a blank line, `<li>` becomes a newline plus `• `, all other tags (including Google's `<html-blob>` wrapper) are stripped, and entities are decoded. Only real tags are stripped, so the `<https://…>` links and `<name@example.com>` addresses that plain-text invites contain are kept.
 2. Remove conferencing boilerplate:
    - the Google Calendar `-::~:~::~:~…` delimited block
    - "Join with Google Meet" / "Join by phone" blocks
-   - "Join Zoom Meeting" blocks
-   - the Microsoft Teams underscore-delimited block
+   - "Join Zoom Meeting" blocks, including the "… is inviting you to a scheduled Zoom meeting." line and the `──────────` lines that frame the invite
+   - the Microsoft Teams underscore-delimited block. Newer invites add a shorter inner rule before the dial-in part. An underscore line only counts when Teams boilerplate follows it, because people also use underscore lines as plain separators.
+
+   A block ends at the first ordinary line, so notes written after an invite are kept.
 3. Collapse runs of blank lines and trim.
 4. Cap at 2,000 characters, adding `…` when truncated.
 
@@ -117,7 +119,7 @@ The same meeting can appear in more than one account or calendar, for example wh
 - **Current meeting:** a meeting where `start ≤ now < min(start + 10 min, end)`. If several qualify, the one with the **earliest start** wins.
 - **Next meeting:** if there is no current meeting, the earliest meeting with `start > now`.
 - **Shown meeting:** the current meeting if there is one, otherwise the next meeting.
-- **Following meeting:** the first meeting in the sorted list after the shown one (by start, then end, then id). This shows up as the second card in the detail view.
+- **Following meeting:** the first meeting in the sorted list after the shown one (by start, then end, then id) that hasn't ended yet. This shows up as the second card in the detail view. Ended meetings are skipped so that a short meeting that started after the current one can't appear as the second card.
 - **Lookahead:** 7 days, limited to what the snapshot contains.
 
 ### 3.4 Watch: complication
@@ -131,11 +133,11 @@ The same meeting can appear in more than one account or calendar, for example wh
   | Current meeting (first 10 min) | `now` | meeting name |
   | Next meeting on a later day | `Tue` (weekday abbreviation in the system locale) | meeting name |
   | Nothing in 7 days / empty snapshot | `—` | `free` |
-  | No snapshot ever received | `—` | `sync` |
+  | No snapshot ever received, or `now ≥ windowEnd` | `—` | `sync` |
 
 - `contentDescription` (screen reader) carries the full text, for example *"Next meeting: Design review at 10:30 in Orion"*.
 - **Tap action** opens the detail activity.
-- **Updates:** use a **timeline complication** (`ComplicationDataTimeline`) with an entry for every state transition (each `start` and `start + 10 min`) for the next 24 hours. The watch face then switches state on time without waking the app. The timeline is rebuilt whenever a new snapshot arrives (via `ComplicationDataSourceUpdateRequester`), on time zone or time changes, and periodically with `UPDATE_PERIOD_SECONDS = 3600` as a safety net.
+- **Updates:** use a **timeline complication** (`ComplicationDataTimeline`) with an entry for every state transition for the next 24 hours: each `start`, each `min(start + 10 min, end)`, each `start − 7 d` (when a meeting comes into the lookahead), and each local midnight (when `Tue` turns into `10:30`). The watch face then switches state on time without waking the app. The timeline is rebuilt whenever a new snapshot arrives (via `ComplicationDataSourceUpdateRequester`), on time zone or time changes, and periodically with `UPDATE_PERIOD_SECONDS = 3600` as a safety net.
 
 ### 3.5 Watch: detail view
 
@@ -202,7 +204,7 @@ The staleness indicator appears **only** in the detail view, never on the compli
 )
 ```
 
-- **Size budget:** DataItems are limited to 100 KB, so the target is ≤ 80 KB. If the payload is too large, drop descriptions and attendees from the **latest** meetings first until it fits. The next three meetings always keep full detail.
+- **Size budget:** DataItems are limited to 100 KB, so the target is ≤ 80 KB. If the payload is too large, drop descriptions and attendees from the **latest** meetings first until it fits. Their attendee count moves into `moreAttendees`. The next three meetings (those not yet ended at `syncedAt`) always keep full detail. As a last resort, drop the latest meetings entirely and move `windowEnd` back to the first dropped start, so the watch treats that time as unknown instead of free. A real week measured 7.4 KB (2026-10-19), so this is a safety net.
 - **Watch side:** a `WearableListenerService` filtered on `/schedule/v1` persists the decoded snapshot to DataStore and requests a complication update. When the app starts, it also reads the current DataItem through `DataClient.getDataItems` in case it missed an event.
 - **No network on either side:**
   - The watch APK **declares no `INTERNET` permission**. This enforces the "no direct Google access" requirement at the manifest level. The Data Layer runs through Play Services and does not need it.
@@ -361,5 +363,6 @@ A **project debug keystore** is kept outside the repo (path in `.envrc.local`). 
 1. **Short-text truncation.** The watch face decides how many title characters fit. Validate on your actual watch face; a `LONG_TEXT` variant may be worth adding later.
 2. **"now" vs. start time.** While a meeting is current, the complication shows `now`. An alternative is the end time (`→11:15`). Revisit after daily use.
 3. **Wear OS version.** The Pixel Watch 2 runs Wear OS 6 (Android 16, API 36), and the spec assumes `minSdk 36`. Check the actual API level on the watch during M0.
-4. **Room resource names.** Check whether booked rooms appear as `TYPE_RESOURCE` attendees in the phone's calendar database for your business account. If they don't, the room falls back to `EVENT_LOCATION`, which Google usually fills with the room name anyway.
+4. **Room resource names.** *Resolved at M2:* booked rooms do appear as `TYPE_RESOURCE` attendees for the business account, with `ATTENDEE_NAME` set to the full resource name, for example `Utrecht (NL)-0-Rainbow Room (10) [Google Meet System]`. These names are long for a watch. Consider shortening them (for example to `Rainbow Room`) after daily use.
 5. **Bleeding-edge toolchain.** detekt 2 is still alpha, and the Java bytecode level AGP's D8 accepts may be below 25. Both have fallbacks in §6.4.
+6. **Real description shapes** (observed at M2 over ADB). Rich-text descriptions are HTML wrapped in `<html-blob>` and `<p dir="ltr">`, with `\u00A0` non-breaking spaces. Nearly every work event ends with the legacy `-::~` Meet block. Zoom invites come from the add-on, framed by `──────────` lines. No Teams invites have been seen yet, so the Teams fixtures are synthetic. The shell user can read the calendar provider (`adb shell content query --uri content://com.android.calendar/…`), which helps with debugging.

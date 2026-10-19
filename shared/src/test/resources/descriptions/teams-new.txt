@@ -1,0 +1,16 @@
+Contact <jane.doe@example.com> with questions.
+
+________________________________________________________________________________
+Microsoft Teams Need help?<https://aka.ms/JoinTeamsMeeting?omkt=en-US>
+Join the meeting now<https://teams.microsoft.com/l/meetup-join/19%3ameeting_abc%40thread.v2/0>
+Meeting ID: 312 456 789 012
+Passcode: Ab1Cd2
+________________________________
+Dial in by phone
++31 20 000 0000,,123456789#<tel:+31200000000,,123456789#> Netherlands, Amsterdam
+Find a local number<https://dialin.teams.microsoft.com/abc>
+Phone conference ID: 123 456 789#
+For organizers: Meeting options<https://teams.microsoft.com/meetingOptions/> | Reset dial-in PIN<https://dialin.teams.microsoft.com/usp/pstnconferencing>
+________________________________________________________________________________
+
+See you there!
