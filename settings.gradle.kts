@@ -14,7 +14,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name =
-  "better-watch-calendar"
+rootProject.name = "better-watch-calendar"
 
-// Modules (:shared, :mobile, :wear) are added in M1.
+include(":shared", ":mobile", ":wear")
