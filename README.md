@@ -70,7 +70,10 @@ DataItem in case a push was missed. `NextMeetingComplicationService` returns a 2
 built by `complicationTimeline` (one entry per state change: starts, the end of each 10-minute "now"
 phase, midnights, and the snapshot's window end), so the watch face changes state on time without
 waking the app. Time zone, clock, and locale changes rebuild the timeline, and an hourly update acts
-as a safety net. To use it, long-press the watch face → *Edit* → pick a complication slot → *Better
+as a safety net. Tapping the complication opens `MainActivity`, the detail view: `detailContent`
+picks the same meeting plus the one after it, and `DetailScreen` lays them out in a rotary-scrollable
+`TransformingLazyColumn` with a sync footer that warns when the snapshot is over an hour old. To use
+it, long-press the watch face → *Edit* → pick a complication slot → *Better
 Watch Calendar* → *Next meeting*.
 
 [nix-direnv]: https://github.com/nix-community/nix-direnv
