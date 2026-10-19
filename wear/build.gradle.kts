@@ -53,6 +53,9 @@ dependencies {
   implementation(libs.compose.ui.tooling.preview)
   debugImplementation(libs.compose.ui.tooling)
 
+  implementation(libs.wear.complications.data.source.ktx)
+  implementation(libs.androidx.datastore)
+
   implementation(libs.play.services.wearable)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.play.services)

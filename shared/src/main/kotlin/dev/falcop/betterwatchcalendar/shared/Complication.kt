@@ -105,6 +105,32 @@ fun complicationTransitions(
     .map(Instant::ofEpochMilli)
 }
 
+/** A complication state that holds from [from] until the next entry's [from]. */
+data class TimelineState(val from: Instant, val content: ComplicationContent)
+
+/**
+ * The complication's states from [now] through [horizon]: the current state first, then one per
+ * change. Includes the snapshot's `windowEnd`, where the content turns into "sync". Consecutive
+ * transitions with equal content are merged.
+ */
+fun complicationTimeline(
+  snapshot: ScheduleSnapshot?,
+  now: Instant,
+  format: TimeFormat,
+  horizon: Duration = TIMELINE_HORIZON,
+): List<TimelineState> {
+  val windowEnd =
+    snapshot?.windowEnd?.let(Instant::ofEpochMilli)?.takeIf { it > now && it <= now.plus(horizon) }
+  val transitions =
+    snapshot?.let { complicationTransitions(it.meetings, now, format.zone, horizon) }.orEmpty()
+  val moments = (listOf(now) + transitions + listOfNotNull(windowEnd)).distinct().sorted()
+  return moments
+    .map { TimelineState(it, complicationContent(snapshot, it, format)) }
+    .fold(emptyList()) { acc, state ->
+      if (acc.lastOrNull()?.content == state.content) acc else acc + state
+    }
+}
+
 internal fun DateTimeFormatter.at(epochMillis: Long): String =
   format(Instant.ofEpochMilli(epochMillis))
 

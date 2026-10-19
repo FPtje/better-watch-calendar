@@ -64,4 +64,13 @@ the included calendars, builds the snapshot, sends it, and appends to the debug 
 100 attempts). Calendar toggles are stored only for calendars the user changed, so new calendars get
 the default: on for each account's own calendar, and only if it is synced.
 
+On the watch, `ScheduleListenerService` decodes each pushed snapshot into `SnapshotStore`
+(DataStore) and asks the complication to update. Opening the watch app also reads the current
+DataItem in case a push was missed. `NextMeetingComplicationService` returns a 24-hour timeline
+built by `complicationTimeline` (one entry per state change: starts, the end of each 10-minute "now"
+phase, midnights, and the snapshot's window end), so the watch face changes state on time without
+waking the app. Time zone, clock, and locale changes rebuild the timeline, and an hourly update acts
+as a safety net. To use it, long-press the watch face → *Edit* → pick a complication slot → *Better
+Watch Calendar* → *Next meeting*.
+
 [nix-direnv]: https://github.com/nix-community/nix-direnv

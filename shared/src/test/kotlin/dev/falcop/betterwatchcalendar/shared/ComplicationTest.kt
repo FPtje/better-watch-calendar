@@ -166,4 +166,50 @@ class ComplicationTest :
         }
       }
     }
+
+    context("timeline") {
+      test("starts with the current state and lists each change") {
+        complicationTimeline(snapshotOf(review), at(12), format24).map {
+          it.from to it.content.text
+        } shouldContainExactly listOf(at(12) to "14:30", at(14, 30) to "now", at(14, 40) to "—")
+      }
+
+      test("a midnight that changes nothing is merged away") {
+        // Free before and after midnight.
+        complicationTimeline(snapshotOf(review), at(15), format24).map {
+          it.from
+        } shouldContainExactly listOf(at(15))
+      }
+
+      test("the window end turns the content into sync") {
+        val snapshot = snapshotOf(syncedAt = at(9, day = 12))
+        complicationTimeline(snapshot, at(8), format24).map {
+          it.from to it.content.title
+        } shouldContainExactly listOf(at(8) to "free", at(9) to "sync")
+      }
+
+      test("no snapshot is a single sync state") {
+        complicationTimeline(null, at(8), format24).map { it.content.title } shouldContainExactly
+          listOf("sync")
+      }
+
+      test("property: each state matches complicationContent until the next one") {
+        checkAll(meetingsArb(), instantArb()) { meetings, now ->
+          val snapshot =
+            snapshotOf(
+              *meetings.toTypedArray(),
+              syncedAt = now.minus(LOOKAHEAD).plusSeconds(12 * 3600L),
+            )
+          val timeline = complicationTimeline(snapshot, now, format24)
+          timeline.first().from shouldBe now
+          timeline.zipWithNext().forEach { (a, b) -> (a.content == b.content) shouldBe false }
+          (0..48)
+            .map { now.plusSeconds(it * 1800L) }
+            .forEach { probe ->
+              timeline.last { it.from <= probe }.content shouldBe
+                complicationContent(snapshot, probe, format24)
+            }
+        }
+      }
+    }
   })

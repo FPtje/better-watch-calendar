@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
 
     <application
+        android:name=".BetterWatchCalendarApp"
         android:label="Better Watch Calendar"
         android:theme="@android:style/Theme.DeviceDefault">
 
@@ -36,5 +37,34 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".NextMeetingComplicationService"
+            android:exported="true"
+            android:icon="@drawable/ic_calendar"
+            android:label="Next meeting"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT" />
+            <!-- Safety net only: the timeline and snapshot pushes drive normal updates (SPEC §3.4). -->
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="3600" />
+        </service>
+
+        <!-- These broadcasts are exempt from the implicit-broadcast limits. -->
+        <receiver
+            android:name=".TimeChangedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
