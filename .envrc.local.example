@@ -1,0 +1,7 @@
+# Copy to .envrc.local (untracked) and fill in. `just devices` shows the serials.
+export PHONE_SERIAL=
+export WATCH_SERIAL=
+
+# Shared debug keystore for both APKs (the Data Layer requires the same signing key).
+# Create it with `just keystore`.
+export BWC_DEBUG_KEYSTORE="$HOME/.android/better-watch-calendar-debug.jks"
