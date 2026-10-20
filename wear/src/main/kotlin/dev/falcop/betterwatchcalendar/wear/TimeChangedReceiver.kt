@@ -6,7 +6,8 @@ import android.content.Intent
 
 /**
  * Rebuilds the complication timeline after a time zone, clock, or locale change, because its
- * entries hold formatted local times.
+ * entries hold formatted local times. Also after an app update, which cancels the tap action's
+ * PendingIntent that the watch face still holds, so taps would do nothing until the next update.
  */
 class TimeChangedReceiver : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent) {
@@ -20,6 +21,7 @@ class TimeChangedReceiver : BroadcastReceiver() {
         Intent.ACTION_TIMEZONE_CHANGED,
         Intent.ACTION_TIME_CHANGED,
         Intent.ACTION_LOCALE_CHANGED,
+        Intent.ACTION_MY_PACKAGE_REPLACED,
       )
   }
 }
