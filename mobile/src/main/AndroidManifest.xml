@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
 
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- Without the exemption the app drops to the RARE standby bucket and the periodic sync
+         is held back for hours by job quota (SPEC P9). -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".BetterWatchCalendarApp"

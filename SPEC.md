@@ -69,6 +69,7 @@ The phone does all reading, filtering, and cleaning. It pushes a self-contained 
 | P6 | "Sync now" also calls `ContentResolver.requestSync` (manual + expedited) for each Google account on the calendar authority. This asks Google's sync to refresh from the server on a best-effort basis. The resulting database change then triggers (a). |
 | P7 | After each successful read, push a `ScheduleSnapshot` to the watch (§5). |
 | P8 | A **debug log screen** shows the last 100 sync attempts: timestamp, trigger, per-account event count, payload size, and errors. |
+| P9 | The app asks for the **battery optimization exemption** (`ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) with a banner on the main screen until it is granted. A rarely opened app falls into the RARE standby bucket, where job quota held the periodic sync back for hours (observed 2026-10-20: none between 09:11 and 13:58). The exemption puts the app in the EXEMPTED bucket and lets its jobs run during Doze. |
 
 ### 3.2 Reading, filtering, and normalization (phone)
 
