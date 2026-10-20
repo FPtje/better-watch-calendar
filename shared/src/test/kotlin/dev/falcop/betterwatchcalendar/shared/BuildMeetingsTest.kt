@@ -38,6 +38,12 @@ class BuildMeetingsTest :
         skipReason(instance(1), work, attendees) shouldBe SkipReason.NoOtherAttendees
       }
 
+      test("events on an included secondary calendar are kept without attendees") {
+        val family =
+          RawCalendar(CalendarId(6), accountName = "me@gmail.example", "family@group.example")
+        skipReason(instance(1, calendar = family), family, emptyList()).shouldBeNull()
+      }
+
       test("tentative, invited and statusless instances with colleagues are kept") {
         listOf(AttendeeStatus.Tentative, AttendeeStatus.Invited, AttendeeStatus.None).forEach {
           skipReason(instance(1, selfStatus = it), work, meetingAttendees(1)).shouldBeNull()

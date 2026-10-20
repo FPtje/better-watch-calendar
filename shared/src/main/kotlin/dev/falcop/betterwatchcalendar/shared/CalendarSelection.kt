@@ -12,9 +12,8 @@ data class CalendarInfo(
   val id: CalendarId
     get() = raw.id
 
-  /** The account's own calendar. Google can list more than one; only synced ones matter. */
   val isPrimary: Boolean
-    get() = raw.ownerAccount.equals(raw.accountName, ignoreCase = true)
+    get() = raw.isPrimary
 }
 
 /** The user's explicit toggles; calendars without one fall back to [defaultIncluded]. */

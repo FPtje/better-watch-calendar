@@ -87,7 +87,7 @@ An instance is **skipped** if any of these is true:
 - `STATUS == STATUS_CANCELED`
 - `ALL_DAY == 1`
 - `SELF_ATTENDEE_STATUS == ATTENDEE_STATUS_DECLINED`
-- it has **no attendees** other than the user and room resources. This excludes focus time, out-of-office, working-location entries, personal blocks, and solo reminders. The user is the attendee whose email equals the calendar's `OWNER_ACCOUNT`, and resources are attendees with `ATTENDEE_TYPE == TYPE_RESOURCE`.
+- it has **no attendees** other than the user and room resources. This excludes focus time, out-of-office, working-location entries, personal blocks, and solo reminders. The user is the attendee whose email equals the calendar's `OWNER_ACCOUNT`, and resources are attendees with `ATTENDEE_TYPE == TYPE_RESOURCE`. This rule applies only to **primary** calendars (`OWNER_ACCOUNT == ACCOUNT_NAME`). Secondary calendars, such as a shared family calendar, are off by default, so including one means the user wants all of its events, attendees or not.
 
 The same meeting can appear in more than one account or calendar, for example when an invite reaches both a work and a personal account. Such instances are **deduplicated** by `UID_2445` plus `BEGIN`, keeping the first occurrence. Accounts are ordered alphabetically by default, and the order can be changed in settings later if needed.
 

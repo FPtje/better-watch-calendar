@@ -5,7 +5,11 @@ enum class SkipReason {
   Canceled,
   AllDay,
   Declined,
-  /** Only the user and room resources: focus time, out-of-office, personal blocks, reminders. */
+  /**
+   * Only the user and room resources: focus time, out-of-office, personal blocks, reminders.
+   * Applies to primary calendars only; every event on a secondary calendar the user included is
+   * shown.
+   */
   NoOtherAttendees,
 }
 
@@ -19,7 +23,8 @@ fun skipReason(
     instance.status == EventStatus.Canceled -> SkipReason.Canceled
     instance.allDay -> SkipReason.AllDay
     instance.selfAttendeeStatus == AttendeeStatus.Declined -> SkipReason.Declined
-    attendees.none { it.type != AttendeeType.Resource && !it.isSelf(calendar.ownerAccount) } ->
+    calendar.isPrimary &&
+      attendees.none { it.type != AttendeeType.Resource && !it.isSelf(calendar.ownerAccount) } ->
       SkipReason.NoOtherAttendees
     else -> null
   }

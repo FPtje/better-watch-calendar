@@ -14,7 +14,11 @@ data class RawCalendar(
   val accountName: String,
   /** `OWNER_ACCOUNT`: the user's own email address as an attendee of this calendar's events. */
   val ownerAccount: String,
-)
+) {
+  /** The account's own calendar. Google can list more than one; only synced ones matter. */
+  val isPrimary: Boolean
+    get() = ownerAccount.equals(accountName, ignoreCase = true)
+}
 
 enum class EventStatus {
   Tentative,
