@@ -23,6 +23,15 @@ install-watch:
 
 install: install-phone install-watch
 
+# Release builds (R8, not debuggable): use these to judge UI performance
+install-release-phone:
+    ANDROID_SERIAL="$PHONE_SERIAL" ./gradlew :mobile:installRelease
+
+install-release-watch:
+    ANDROID_SERIAL="$WATCH_SERIAL" ./gradlew :wear:installRelease
+
+install-release: install-release-phone install-release-watch
+
 log-phone:
     adb -s "$PHONE_SERIAL" logcat --pid="$(adb -s "$PHONE_SERIAL" shell pidof -s {{app_id}})"
 

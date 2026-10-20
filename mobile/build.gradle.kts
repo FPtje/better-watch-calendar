@@ -28,6 +28,16 @@ android {
     }
   }
 
+  buildTypes {
+    // Signed with the debug key to keep pairing with :wear (see its release build type).
+    named("release") {
+      isMinifyEnabled = true
+      isShrinkResources = true
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+      signingConfig = signingConfigs.getByName("debug")
+    }
+  }
+
   compileOptions {
     sourceCompatibility = JavaVersion.toVersion(libs.versions.jvmTarget.get())
     targetCompatibility = JavaVersion.toVersion(libs.versions.jvmTarget.get())

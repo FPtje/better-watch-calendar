@@ -28,6 +28,17 @@ android {
     }
   }
 
+  buildTypes {
+    // Debuggable builds run Compose several times slower (ART skips most JIT optimization), so
+    // judge UI performance on this one. Signed with the debug key to keep pairing with :mobile.
+    named("release") {
+      isMinifyEnabled = true
+      isShrinkResources = true
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+      signingConfig = signingConfigs.getByName("debug")
+    }
+  }
+
   compileOptions {
     sourceCompatibility = JavaVersion.toVersion(libs.versions.jvmTarget.get())
     targetCompatibility = JavaVersion.toVersion(libs.versions.jvmTarget.get())
