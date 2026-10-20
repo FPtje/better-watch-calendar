@@ -130,15 +130,15 @@ The same meeting can appear in more than one account or calendar, for example wh
 
   | State | `text` (top, ~7 chars) | `title` (bottom, ~7 chars) |
   |---|---|---|
-  | Next meeting today | `10:30` (follows the system 12/24 h setting) | meeting name, truncated by the watch face |
+  | Next meeting today, or at most 24 h away | `10:30` (follows the system 12/24 h setting) | meeting name, truncated by the watch face |
   | Current meeting (first 10 min) | `now` | meeting name |
-  | Next meeting on a later day | `Tue` (weekday abbreviation in the system locale) | meeting name |
+  | Next meeting on a later day, more than 24 h away | `Tue` (weekday abbreviation in the system locale) | meeting name |
   | Nothing in 7 days / empty snapshot | `—` | `free` |
   | No snapshot ever received, or `now ≥ windowEnd` | `—` | `sync` |
 
 - `contentDescription` (screen reader) carries the full text, for example *"Next meeting: Design review at 10:30 in Orion"*.
 - **Tap action** opens the detail activity.
-- **Updates:** use a **timeline complication** (`ComplicationDataTimeline`) with an entry for every state transition for the next 24 hours: each `start`, each `min(start + 10 min, end)`, each `start − 7 d` (when a meeting comes into the lookahead), and each local midnight (when `Tue` turns into `10:30`). The watch face then switches state on time without waking the app. The timeline is rebuilt whenever a new snapshot arrives (via `ComplicationDataSourceUpdateRequester`), on time zone or time changes, and periodically with `UPDATE_PERIOD_SECONDS = 3600` as a safety net.
+- **Updates:** use a **timeline complication** (`ComplicationDataTimeline`) with an entry for every state transition for the next 24 hours: each `start`, each `min(start + 10 min, end)`, each `start − 7 d` (when a meeting comes into the lookahead), each `start − 24 h` (when `Tue` turns into `10:30`), and each local midnight (the same, on a 25-hour DST day). The watch face then switches state on time without waking the app. The timeline is rebuilt whenever a new snapshot arrives (via `ComplicationDataSourceUpdateRequester`), on time zone or time changes, and periodically with `UPDATE_PERIOD_SECONDS = 3600` as a safety net.
 
 ### 3.5 Watch: detail view
 

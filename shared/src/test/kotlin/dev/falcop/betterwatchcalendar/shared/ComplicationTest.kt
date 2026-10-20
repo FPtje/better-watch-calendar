@@ -34,8 +34,17 @@ class ComplicationTest :
           ),
         ),
         Triple(
-          "next meeting on a later day",
+          "next meeting tomorrow, within 24 h",
           at(15, 30, day = 18),
+          ComplicationContent(
+            "14:30",
+            "Design review",
+            "Next meeting: Design review on Monday at 14:30 in Orion",
+          ),
+        ),
+        Triple(
+          "next meeting more than 24 h away",
+          at(14, day = 18),
           ComplicationContent(
             "Mon",
             "Design review",
@@ -95,12 +104,13 @@ class ComplicationTest :
       complicationContent(snapshotOf(review), at(9, day = 18), dutch).text shouldBe "ma"
     }
 
-    test("'today' is decided in the watch's time zone") {
+    test("the weekday is decided in the watch's time zone") {
       val lateNight = meeting(at(23, 30), title = "Late")
       val tokyo = TimeFormat(ZoneId.of("Asia/Tokyo"), Locale.US, is24Hour = true)
-      // 23:30 Amsterdam is already Tuesday 06:30 in Tokyo.
-      complicationContent(snapshotOf(lateNight), at(9), tokyo).text shouldBe "Tue"
-      complicationContent(snapshotOf(lateNight), at(9), format24).text shouldBe "23:30"
+      // Monday 23:30 Amsterdam is already Tuesday 06:30 in Tokyo.
+      val now = at(22, day = 18)
+      complicationContent(snapshotOf(lateNight, syncedAt = now), now, tokyo).text shouldBe "Tue"
+      complicationContent(snapshotOf(lateNight, syncedAt = now), now, format24).text shouldBe "Mon"
     }
 
     test("DST: a meeting the day after the clocks go back still shows its local time") {
@@ -110,10 +120,16 @@ class ComplicationTest :
         .text shouldBe "09:00"
       complicationContent(
           snapshotOf(monday, syncedAt = at(8, day = 25)),
-          at(23, day = 25),
+          at(8, day = 25),
           format24,
         )
         .text shouldBe "Mon"
+    }
+
+    test("DST: a meeting later on the 25-hour day still shows its time") {
+      val late = meeting(at(23, 30, day = 25), title = "Late")
+      val now = at(0, day = 25)
+      complicationContent(snapshotOf(late, syncedAt = now), now, format24).text shouldBe "23:30"
     }
 
     context("timeline transitions") {
@@ -148,6 +164,12 @@ class ComplicationTest :
           listOf(at(11), at(0, day = 20))
       }
 
+      test("a meeting coming within 24 h is a transition") {
+        val tomorrow = meeting(at(10, day = 20))
+        complicationTransitions(listOf(tomorrow), at(8), amsterdam) shouldContainExactly
+          listOf(at(10), at(0, day = 20))
+      }
+
       test("DST night still has exactly one midnight") {
         complicationTransitions(emptyList(), at(12, day = 24), amsterdam) shouldContainExactly
           listOf(at(0, day = 25))
@@ -172,6 +194,15 @@ class ComplicationTest :
         complicationTimeline(snapshotOf(review), at(12), format24).map {
           it.from to it.content.text
         } shouldContainExactly listOf(at(12) to "14:30", at(14, 30) to "now", at(14, 40) to "—")
+      }
+
+      test("a weekday turns into a time 24 h before the meeting") {
+        val tomorrow = meeting(at(10, day = 20))
+        complicationTimeline(snapshotOf(tomorrow), at(8), format24).map {
+          it.from to it.content.text
+        } shouldContainExactly
+          // Midnight only changes the description: "on Tuesday at 10:00" becomes "at 10:00".
+          listOf(at(8) to "Tue", at(10) to "10:00", at(0, day = 20) to "10:00")
       }
 
       test("a midnight that changes nothing is merged away") {

@@ -64,7 +64,8 @@ fun complicationContent(
       val today = format.date(m.start) == format.date(now)
       val time = format.spokenClock.at(m.start)
       ComplicationContent(
-        text = if (today) format.clock.at(m.start) else format.weekday.at(m.start),
+        text =
+          if (showsClock(m, now, today)) format.clock.at(m.start) else format.weekday.at(m.start),
         title = m.title,
         contentDescription =
           if (today) "Next meeting: ${m.title} at $time${m.inRoom()}"
@@ -75,13 +76,23 @@ fun complicationContent(
   }
 }
 
+/**
+ * Within this time a bare clock time is unambiguous, so a meeting tomorrow morning shows `10:00`
+ * instead of `Wed`.
+ */
+val CLOCK_WINDOW: Duration = Duration.ofHours(24)
+
+/** Today's meetings always show a time, even on a 25-hour DST day. */
+private fun showsClock(m: Meeting, now: Instant, today: Boolean): Boolean =
+  today || m.start - now.toEpochMilli() <= CLOCK_WINDOW.toMillis()
+
 /** How far ahead the complication timeline is built. */
 val TIMELINE_HORIZON: Duration = Duration.ofHours(24)
 
 /**
  * Moments in `(now, now + horizon]` where [complicationContent] may change: each meeting's start,
- * the end of its "now" phase, when it enters the [LOOKAHEAD], and each local midnight (a weekday
- * label turns into a time).
+ * the end of its "now" phase, when it enters the [LOOKAHEAD], when it enters the [CLOCK_WINDOW],
+ * and each local midnight (the description drops the weekday).
  */
 fun complicationTransitions(
   meetings: List<Meeting>,
@@ -96,7 +107,12 @@ fun complicationTransitions(
       .map { it.atStartOfDay(zone).toInstant().toEpochMilli() }
       .takeWhile { it <= until }
   val meetingEdges = meetings.flatMap {
-    listOf(it.start, minOf(it.currentUntil, it.end), it.start - LOOKAHEAD.toMillis())
+    listOf(
+      it.start,
+      minOf(it.currentUntil, it.end),
+      it.start - LOOKAHEAD.toMillis(),
+      it.start - CLOCK_WINDOW.toMillis(),
+    )
   }
   return (meetingEdges + midnights)
     .filter { it in (from + 1)..until }
