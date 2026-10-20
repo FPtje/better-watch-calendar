@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -34,7 +38,8 @@ import dev.falcop.betterwatchcalendar.shared.WAITING_FOR_PHONE
 /**
  * The detail view opened from the complication: the shown and following meeting, then the sync
  * footer. Each meeting is split into several list items (header card, description, attendees) so
- * long descriptions scroll smoothly and the edge transformations stay item-sized.
+ * long descriptions scroll smoothly and the edge transformations stay item-sized. Description and
+ * attendees start collapsed; tapping a meeting's header card toggles them.
  */
 @Composable
 fun DetailScreen(content: DetailContent) {
@@ -42,6 +47,8 @@ fun DetailScreen(content: DetailContent) {
     AppScaffold {
       val listState = rememberTransformingLazyColumnState()
       val spec = rememberTransformationSpec()
+      // Ids of meetings whose description and attendees are shown.
+      var expanded by rememberSaveable { mutableStateOf(emptySet<String>()) }
       ScreenScaffold(scrollState = listState) { contentPadding ->
         TransformingLazyColumn(
           state = listState,
@@ -52,7 +59,12 @@ fun DetailScreen(content: DetailContent) {
             DetailContent.WaitingForPhone -> message(WAITING_FOR_PHONE, spec)
             is DetailContent.Schedule -> {
               content.emptyMessage?.let { message(it, spec) }
-              content.cards.forEach { meeting(it, spec) }
+              content.cards.forEach { card ->
+                val isExpanded = card.id in expanded
+                meeting(card, isExpanded, spec) {
+                  expanded = if (isExpanded) expanded - card.id else expanded + card.id
+                }
+              }
               footer(content.footer, spec)
             }
           }
@@ -73,8 +85,14 @@ private fun TransformingLazyColumnScope.message(text: String, spec: Transformati
   }
 }
 
-private fun TransformingLazyColumnScope.meeting(card: MeetingCard, spec: TransformationSpec) {
-  item("${card.id}/header") { MeetingHeader(card, spec) }
+private fun TransformingLazyColumnScope.meeting(
+  card: MeetingCard,
+  expanded: Boolean,
+  spec: TransformationSpec,
+  onToggle: () -> Unit,
+) {
+  item("${card.id}/header") { MeetingHeader(card, spec, onToggle) }
+  if (!expanded) return
   if (card.description.isNotEmpty()) {
     item("${card.id}/description") {
       Text(
@@ -105,10 +123,10 @@ private fun TransformingLazyColumnScope.meeting(card: MeetingCard, spec: Transfo
 private fun TransformingLazyColumnItemScope.MeetingHeader(
   card: MeetingCard,
   spec: TransformationSpec,
+  onClick: () -> Unit,
 ) {
-  // Purely informational; Wear's Card has no non-clickable variant.
   Card(
-    onClick = {},
+    onClick = onClick,
     modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
     transformation = SurfaceTransformation(spec),
   ) {
