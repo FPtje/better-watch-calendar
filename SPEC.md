@@ -13,7 +13,7 @@ A narrowly scoped calendar for Wear OS. It answers one question at a glance: **w
 ### Goals
 
 1. A **short-text complication** that shows the start time and name of the next meeting. For the first 10 minutes of a meeting, it shows that meeting instead.
-2. Tapping the complication opens a **detail view** with two meetings: the one the complication shows, and the one after it. Each meeting shows its name, time, room, description, and (nice to have) attendees.
+2. Tapping the complication opens a **detail view** with the meeting the complication shows, followed by the rest of the following meeting's day. Each meeting shows its name, time, room, description, and (nice to have) attendees.
 3. Calendar data comes **only from the phone**. The watch never talks to Google or uses the watch's own Google account.
 4. The phone app supports **multiple Google accounts at the same time**.
 5. A reproducible dev environment: a Nix flake with direnv, and no global installs apart from Nix and direnv.
@@ -120,7 +120,7 @@ The same meeting can appear in more than one account or calendar, for example wh
 - **Current meeting:** a meeting where `start ≤ now < min(start + 10 min, end)`. If several qualify, the one with the **earliest start** wins.
 - **Next meeting:** if there is no current meeting, the earliest meeting with `start > now`.
 - **Shown meeting:** the current meeting if there is one, otherwise the next meeting.
-- **Following meeting:** the first meeting in the sorted list after the shown one (by start, then end, then id) that hasn't ended yet. This shows up as the second card in the detail view. Ended meetings are skipped so that a short meeting that started after the current one can't appear as the second card.
+- **Following meeting:** the first meeting in the sorted list after the shown one (by start, then end, then id) that hasn't ended yet. Its day decides which further meetings the detail view lists. Ended meetings are skipped so that a short meeting that started after the current one can't appear as the second card.
 - **Lookahead:** 7 days, limited to what the snapshot contains.
 
 ### 3.4 Watch: complication
@@ -150,7 +150,7 @@ A scrolling Compose for Wear OS screen (`TransformingLazyColumn`, rotary input s
    - Room, if present.
    - Description: the cleaned plain text, shown in full.
    - Attendees (nice to have): a list at the bottom of the card.
-2. **Following meeting card** in the same format.
+2. **Day cards** in the same format: every later meeting that hasn't ended and starts on the same day as the following meeting. So while more meetings follow today, this is the rest of today; when the shown meeting is today's last (or the next meeting is on a later day), it is that whole next day.
 3. **Footer:** `Synced 14:02`. If the snapshot is more than 1 hour old, show a warning: *"Phone not synced for 3 h"*.
 
 Empty states: "No meetings in the next 7 days" and "Waiting for phone… open Better Watch Calendar on your phone".

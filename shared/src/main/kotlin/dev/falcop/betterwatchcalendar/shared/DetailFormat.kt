@@ -62,7 +62,7 @@ sealed interface DetailContent {
   data object WaitingForPhone : DetailContent
 
   data class Schedule(
-    /** The shown meeting and the one after it; empty when there is nothing to show. */
+    /** From [detailMeetings]; empty when there is nothing to show. */
     val cards: List<MeetingCard>,
     /** Shown instead of the cards when [cards] is empty. */
     val emptyMessage: String?,
@@ -71,8 +71,8 @@ sealed interface DetailContent {
 }
 
 /**
- * The detail view for [snapshot] at [now]: the same meeting as the complication, then the following
- * one. An expired snapshot shows the waiting message, never "no meetings".
+ * The detail view for [snapshot] at [now]: the same meeting as the complication, then the rest of
+ * the following meeting's day. An expired snapshot shows the waiting message, never "no meetings".
  */
 fun detailContent(snapshot: ScheduleSnapshot?, now: Instant, format: TimeFormat): DetailContent {
   if (snapshot == null) return DetailContent.WaitingForPhone
@@ -84,10 +84,35 @@ fun detailContent(snapshot: ScheduleSnapshot?, now: Instant, format: TimeFormat)
     Selection.Free -> DetailContent.Schedule(emptyList(), NO_MEETINGS, footer)
     is Selection.Shown -> {
       val cards =
-        listOfNotNull(selection.meeting, selection.following).map { it.toCard(now, format) }
+        detailMeetings(snapshot.meetings, selection, now, format).map {
+          it.toCard(now, format)
+        }
       DetailContent.Schedule(cards, null, footer)
     }
   }
+}
+
+/**
+ * The shown meeting, then every later meeting that hasn't ended and starts on the same day as the
+ * following one. So the detail view lists the rest of today, or, when the shown meeting is today's
+ * last, all of the next day with meetings.
+ */
+internal fun detailMeetings(
+  meetings: List<Meeting>,
+  selection: Selection.Shown,
+  now: Instant,
+  format: TimeFormat,
+): List<Meeting> {
+  val following = selection.following ?: return listOf(selection.meeting)
+  val t = now.toEpochMilli()
+  val horizon = t + LOOKAHEAD.toMillis()
+  val day = format.date(following.start)
+  val rest =
+    meetings
+      .filter { MeetingOrder.compare(it, selection.meeting) > 0 }
+      .filter { it.end > t && it.start <= horizon && format.date(it.start) == day }
+      .sortedWith(MeetingOrder)
+  return listOf(selection.meeting) + rest
 }
 
 private fun Meeting.toCard(now: Instant, format: TimeFormat) =

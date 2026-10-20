@@ -36,10 +36,11 @@ import dev.falcop.betterwatchcalendar.shared.SyncFooter
 import dev.falcop.betterwatchcalendar.shared.WAITING_FOR_PHONE
 
 /**
- * The detail view opened from the complication: the shown and following meeting, then the sync
- * footer. Each meeting is split into several list items (header card, description, attendees) so
- * long descriptions scroll smoothly and the edge transformations stay item-sized. Description and
- * attendees start collapsed; tapping a meeting's header card toggles them.
+ * The detail view opened from the complication: the shown meeting and the rest of the following
+ * meeting's day, then the sync footer. Each meeting is split into several list items (header card,
+ * description, attendees) so long descriptions scroll smoothly and the edge transformations stay
+ * item-sized. Description and attendees start collapsed; tapping a meeting's header card toggles
+ * them.
  */
 @Composable
 fun DetailScreen(content: DetailContent) {

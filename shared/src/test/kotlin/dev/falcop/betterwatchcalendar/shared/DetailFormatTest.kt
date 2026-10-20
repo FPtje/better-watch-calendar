@@ -95,6 +95,29 @@ class DetailFormatTest :
           listOf("Review", "Planning")
       }
 
+      context("a whole day of meetings") {
+        val lunch = meeting(at(12), title = "Lunch")
+        val planning2 = meeting(at(11, day = 20), title = "Planning 2")
+        val retro = meeting(at(15, day = 20), title = "Retro")
+        val wednesday = meeting(at(9, day = 21), title = "Wednesday")
+        val week = snapshotOf(standup, review2, lunch, tomorrow, planning2, retro, wednesday)
+
+        test("the rest of today while more meetings follow today") {
+          schedule(week, at(9)).cards.map { it.title } shouldContainExactly
+            listOf("Standup", "Review", "Lunch")
+        }
+
+        test("today's last meeting, then all of tomorrow") {
+          schedule(week, at(11, 20)).cards.map { it.title } shouldContainExactly
+            listOf("Lunch", "Planning", "Planning 2", "Retro")
+        }
+
+        test("all of tomorrow when the next meeting is tomorrow") {
+          schedule(week, at(13)).cards.map { it.title } shouldContainExactly
+            listOf("Planning", "Planning 2", "Retro")
+        }
+      }
+
       test("a meeting on a later day gets a weekday prefix") {
         schedule(snapshot, at(11, 20)).cards.map { it.time } shouldContainExactly
           listOf("Tue 09:00–09:30")
