@@ -23,7 +23,7 @@ private val Context.logStore: DataStore<SyncLogFile> by
   )
 
 /** Manual wiring of the phone app's long-lived dependencies. */
-class AppGraph(context: Context) {
+class AppGraph(val context: Context) {
   val resolver: ContentResolver = context.contentResolver
   val dataClient: DataClient = Wearable.getDataClient(context)
   val workManager: WorkManager = WorkManager.getInstance(context)

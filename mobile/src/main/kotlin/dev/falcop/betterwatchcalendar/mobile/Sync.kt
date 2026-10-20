@@ -21,6 +21,8 @@ val LOOKBEHIND: Duration = Duration.ofHours(1)
 /** Reads the included calendars, pushes a snapshot to the watch, and records the attempt. */
 suspend fun AppGraph.sync(trigger: SyncTrigger, clock: Clock): SyncLogEntry {
   val now = clock.millis()
+  if (trigger == SyncTrigger.Manual)
+    withContext(Dispatchers.IO) { requestGoogleSync(context, resolver) }
   val windowEnd = now + LOOKAHEAD.toMillis()
   val read = withContext(Dispatchers.IO) { readSchedule(now - LOOKBEHIND.toMillis(), windowEnd) }
   val entry =

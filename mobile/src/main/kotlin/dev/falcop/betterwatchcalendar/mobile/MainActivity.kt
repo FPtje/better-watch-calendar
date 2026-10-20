@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 const val TAG = "BWC"
 
@@ -52,6 +54,7 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     graph.workManager.schedulePeriodicSync()
+    lifecycleScope.launch { graph.workManager.watchCalendarChanges() }
     // Not on recreation (rotation), only when the user actually opens the app.
     if (savedInstanceState == null && hasCalendarPermission(this)) {
       graph.workManager.syncNow(SyncTrigger.AppOpen)
@@ -188,6 +191,7 @@ private fun MainScreen() {
   ) { padding ->
     Column(Modifier.padding(padding).fillMaxSize()) {
       BatteryOptimizationBanner()
+      AccountAccessBanner()
       PrimaryTabRow(selectedTabIndex = tab) {
         Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Calendars") })
         Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Debug log") })

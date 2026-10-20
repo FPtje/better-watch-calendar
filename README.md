@@ -59,10 +59,15 @@ spec: `buildMeetings` (skip rules, dedup, room, attendees), `cleanDescription`, 
 The apps only map Android types in and out.
 
 On the phone, `CalendarReader` maps `CalendarContract` cursors to `:shared` types, and `SyncWorker`
-(WorkManager: app open, toggle changes, *Sync now*, and every 15 minutes) runs `sync()`. That reads
+(WorkManager: app open, toggle changes, *Sync now*, every 15 minutes, and a content-URI trigger on
+the calendar database) runs `sync()`. The content-URI trigger fires once per request, so each run
+arms the next one, alternating between two unique work names so changes made during a sync are not
+missed. *Sync now* also calls `ContentResolver.requestSync` for each Google account the user has
+picked in the account chooser (Android ignores it for accounts the app can't see). That reads
 the included calendars, builds the snapshot, sends it, and appends to the debug log (DataStore, last
 100 attempts). Calendar toggles are stored only for calendars the user changed, so new calendars get
 the default: on for each account's own calendar, and only if it is synced.
+`fitToBudget` keeps the snapshot under 80 KB by stripping detail from the latest meetings first.
 
 On the watch, `ScheduleListenerService` decodes each pushed snapshot into `SnapshotStore`
 (DataStore) and asks the complication to update. Opening the watch app also reads the current
