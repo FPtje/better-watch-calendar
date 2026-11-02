@@ -54,7 +54,7 @@ fun complicationContent(
       val m = selection.meeting
       ComplicationContent(
         text = "now",
-        title = m.title,
+        title = shortTitle(m.title),
         contentDescription =
           "Current meeting: ${m.title}, started at ${format.spokenClock.at(m.start)}${m.inRoom()}",
       )
@@ -66,7 +66,7 @@ fun complicationContent(
       ComplicationContent(
         text =
           if (showsClock(m, now, today)) format.clock.at(m.start) else format.weekday.at(m.start),
-        title = m.title,
+        title = shortTitle(m.title),
         contentDescription =
           if (today) "Next meeting: ${m.title} at $time${m.inRoom()}"
           else
@@ -75,6 +75,24 @@ fun complicationContent(
     }
   }
 }
+
+/**
+ * The owner's name, left out of the complication title: it is in nearly every 1:1 title. TODO if I
+ * ever want to release this: make this a setting in the Android app.
+ */
+const val OWN_NAME = "Falco"
+
+private val ownNameSegment =
+  Regex(
+    "^\\s*${Regex.escape(OWN_NAME)}\\s*/\\s*|\\s*/\\s*${Regex.escape(OWN_NAME)}\\s*$",
+    RegexOption.IGNORE_CASE,
+  )
+
+/**
+ * The title without a leading `Falco / ` or trailing ` / Falco`, so the few characters the
+ * complication shows go to the other person. Only the title; the spoken description stays whole.
+ */
+internal fun shortTitle(title: String): String = title.replace(ownNameSegment, "").ifBlank { title }
 
 /**
  * Within this time a bare clock time is unambiguous, so a meeting tomorrow morning shows `10:00`

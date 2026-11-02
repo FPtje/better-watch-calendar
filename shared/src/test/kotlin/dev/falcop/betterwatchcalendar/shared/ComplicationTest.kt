@@ -99,6 +99,29 @@ class ComplicationTest :
         "Next meeting: Chat at 10:00"
     }
 
+    test("own name is left out of the title, but not the description") {
+      val oneOnOne = meeting(at(10), title = "Falco / Anna sync")
+      complicationContent(snapshotOf(oneOnOne), at(9), format24) shouldBe
+        ComplicationContent("10:00", "Anna sync", "Next meeting: Falco / Anna sync at 10:00")
+      complicationContent(snapshotOf(oneOnOne), at(10, 5), format24).title shouldBe "Anna sync"
+    }
+
+    context("short title") {
+      withData(
+        "Falco / Anna" to "Anna",
+        "falco/anna 1:1" to "anna 1:1",
+        "  FALCO  /  Anna" to "Anna",
+        "Anna / Falco" to "Anna",
+        "Falco" to "Falco",
+        "Falco / " to "Falco / ",
+        "Falcon / Anna" to "Falcon / Anna",
+        "Anna / Falco / Bob" to "Anna / Falco / Bob",
+        "Lunch with Falco" to "Lunch with Falco",
+      ) { (title, expected) ->
+        shortTitle(title) shouldBe expected
+      }
+    }
+
     test("weekday follows the system locale") {
       val dutch = TimeFormat(amsterdam, Locale.forLanguageTag("nl-NL"), is24Hour = true)
       complicationContent(snapshotOf(review), at(9, day = 18), dutch).text shouldBe "ma"
