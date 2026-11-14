@@ -60,7 +60,7 @@ The phone does all reading, filtering, and cleaning. It pushes a self-contained 
 ### 3.1 Phone app (companion)
 
 | ID | Requirement |
-|----|-------------|
+| ---- | ------------- |
 | P1 | Request the `READ_CALENDAR` runtime permission on first launch. Without it, show an explanation screen with a button to grant it. |
 | P2 | Accounts are managed in **Android Settings → Accounts**, not in the app. The app shows every calendar whose `ACCOUNT_TYPE == "com.google"`, grouped by `ACCOUNT_NAME`. Calendars from other account types are ignored. |
 | P3 | Each calendar has an include toggle. New calendars default to **on** for each account's primary calendar (`OWNER_ACCOUNT == ACCOUNT_NAME`) and **off** for all others. Calendars with `SYNC_EVENTS == 0` are shown greyed out with the hint "Not synced. Enable it in Google Calendar settings". |
@@ -100,7 +100,7 @@ The same meeting can appear in more than one account or calendar, for example wh
 
 **Description** is cleaned as follows. Google sync may store HTML in this field.
 
-1. Convert HTML to plain text: `<br>` becomes a newline, `<p>` paragraphs are separated by a blank line, `<li>` becomes a newline plus `• `, all other tags (including Google's `<html-blob>` wrapper) are stripped, and entities are decoded. Only real tags are stripped, so the `<https://…>` links and `<name@example.com>` addresses that plain-text invites contain are kept.
+1. Convert HTML to plain text: `<br>` becomes a newline, `<p>` paragraphs are separated by a blank line, `<li>` becomes a newline plus `•`, all other tags (including Google's `<html-blob>` wrapper) are stripped, and entities are decoded. Only real tags are stripped, so the `<https://…>` links and `<name@example.com>` addresses that plain-text invites contain are kept.
 2. Remove conferencing boilerplate:
    - the Google Calendar `-::~:~::~:~…` delimited block
    - "Join with Google Meet" / "Join by phone" blocks
@@ -129,7 +129,7 @@ The same meeting can appear in more than one account or calendar, for example wh
 - Content:
 
   | State | `text` (top, ~7 chars) | `title` (bottom, ~7 chars) |
-  |---|---|---|
+  | --- | --- | --- |
   | Next meeting today, or at most 24 h away | `10:30` (follows the system 12/24 h setting) | meeting name, truncated by the watch face |
   | Current meeting (first 10 min) | `now` | meeting name |
   | Next meeting on a later day, more than 24 h away | `Tue` (weekday abbreviation in the system locale) | meeting name |
@@ -219,7 +219,7 @@ The staleness indicator appears **only** in the detail view, never on the compli
 ### 6.1 Stack
 
 | Concern | Choice |
-|---|---|
+| --- | --- |
 | Language | Kotlin 2.4 (K2 compiler), JDK 25 toolchain (see §6.4) |
 | UI | Jetpack Compose (phone, Material 3); Compose for Wear OS (Material 3 for Wear) |
 | Typed errors / FP | **Arrow** (`arrow-core`: `Either`, `Raise` DSL, `NonEmptyList`) |
@@ -256,7 +256,7 @@ The staleness indicator appears **only** in the detail view, never on the compli
 Baseline as of 2026-10. Each entry is the current stable release or newer. Exact versions are pinned in `flake.lock` and `gradle/libs.versions.toml` at M0. Use the newest stable patch available then.
 
 | Tool | Version | Notes |
-|---|---|---|
+| --- | --- | --- |
 | JDK | **25 LTS** (nixpkgs `jdk25`, 25.0.4.1) | Runs Gradle, Kotlin, and Studio's Gradle builds. Chosen over the newer non-LTS JDK 27 because Gradle and Kotlin support for new JDKs lags behind their release. |
 | Gradle | **9.6+** via the wrapper | AGP 9.4 requires at least 9.6.0. The wrapper is set to the latest 9.x at M0. |
 | Android Gradle Plugin | **9.4.x** | Uses AGP 9's built-in Kotlin support, so modules don't apply `org.jetbrains.kotlin.android`. |
@@ -298,7 +298,7 @@ Baseline as of 2026-10. Each entry is the current stable release or newer. Exact
 The Pixel Watch 2 has no USB data connection, so both devices use **wireless debugging**.
 
 | Device | Steps |
-|---|---|
+| --- | --- |
 | Pixel 8 Pro | USB (`adb devices`), or Developer options → Wireless debugging → *Pair device with pairing code* → `adb pair <ip>:<port>` then `adb connect <ip>:<port>` |
 | Pixel Watch 2 | Settings → System → About → tap *Build number* 7× → Developer options → *ADB debugging* + *Wireless debugging* → *Pair new device* → `adb pair <ip>:<port> <code>` → `adb connect <ip>:<port>` |
 
@@ -348,7 +348,7 @@ A **project debug keystore** is kept outside the repo (path in `.envrc.local`). 
 ## 9. Milestones
 
 | # | Deliverable | Done when |
-|---|---|---|
+| --- | --- | --- |
 | M0 | Dev environment | `cd` into the repo loads the shell; `adb devices` lists phone + watch over Wi-Fi; Android Studio opens the project. |
 | M1 | Skeleton | 3 modules build; phone sends a hard-coded snapshot; watch logs it. |
 | M2 | Domain core | `select()`, filters, deduplication, cleaning, and formatting implemented and tested in `:shared`. |
