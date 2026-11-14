@@ -35,6 +35,7 @@ class NextMeetingComplicationService : SuspendingTimelineComplicationDataSourceS
     val timeline = complicationTimeline(graph.snapshots.current(), now, timeFormat(this))
     val tap = detailIntent(this)
     val ends = timeline.drop(1).map { it.from } + now.plus(TIMELINE_HORIZON)
+    scheduleComplicationRefresh(this, timeline.getOrNull(1)?.from)
     Log.i(TAG, "complication: ${timeline.size} states")
     timeline.forEach { Log.i(TAG, "  ${it.from} ${it.content.text} | ${it.content.title}") }
     return ComplicationDataTimeline(

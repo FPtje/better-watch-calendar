@@ -7,6 +7,9 @@
     <!-- Enforces "no direct Google access" (SPEC §5); the Data Layer goes through Play Services. -->
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
 
+    <!-- Rebuilds the complication exactly at each state change, such as the end of "now". -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <application
         android:name=".BetterWatchCalendarApp"
         android:icon="@mipmap/ic_launcher"
@@ -57,6 +60,10 @@
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="3600" />
         </service>
+
+        <receiver
+            android:name=".ComplicationRefreshReceiver"
+            android:exported="false" />
 
         <!-- These broadcasts are exempt from the implicit-broadcast limits. -->
         <receiver
