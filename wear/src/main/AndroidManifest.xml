@@ -61,13 +61,10 @@
                 android:value="3600" />
         </service>
 
+        <!-- Also the refresh alarm's target. These broadcasts are exempt from the
+             implicit-broadcast limits. -->
         <receiver
             android:name=".ComplicationRefreshReceiver"
-            android:exported="false" />
-
-        <!-- These broadcasts are exempt from the implicit-broadcast limits. -->
-        <receiver
-            android:name=".TimeChangedReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />

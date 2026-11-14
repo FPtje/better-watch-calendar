@@ -16,12 +16,12 @@ private val Context.snapshotStore: DataStore<ScheduleSnapshot?> by
 /** Manual wiring of the watch app's long-lived dependencies. */
 class AppGraph(context: Context) {
   val dataClient: DataClient = Wearable.getDataClient(context)
-  val snapshots = SnapshotStore(context.snapshotStore)
   val complicationUpdater: ComplicationDataSourceUpdateRequester =
     ComplicationDataSourceUpdateRequester.create(
       context,
       ComponentName(context, NextMeetingComplicationService::class.java),
     )
+  val snapshots = SnapshotStore(context.snapshotStore) { complicationUpdater.requestUpdateAll() }
 }
 
 class BetterWatchCalendarApp : Application() {

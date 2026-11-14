@@ -11,7 +11,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.common.api.ApiException
 import dev.falcop.betterwatchcalendar.shared.ScheduleSnapshot
 import dev.falcop.betterwatchcalendar.shared.detailContent
-import java.time.Clock
 import java.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -28,13 +27,11 @@ class MainActivity : ComponentActivity() {
       val stored by
         remember { graph.snapshots.snapshot.map(::Stored) }
           .collectAsStateWithLifecycle(initialValue = null)
-      val ticks = remember { minuteTicks(Clock.systemUTC()) }
-      val now by ticks.collectAsStateWithLifecycle(initialValue = Instant.now())
+      val now by
+        remember { minuteTicks() }.collectAsStateWithLifecycle(initialValue = Instant.now())
       LaunchedEffect(Unit) {
         try {
-          if (graph.snapshots.refreshFrom(graph.dataClient)) {
-            graph.complicationUpdater.requestUpdateAll()
-          }
+          graph.snapshots.refreshFrom(graph.dataClient)
         } catch (e: ApiException) {
           Log.w(TAG, "could not read the current snapshot", e)
         }
@@ -50,9 +47,9 @@ private data class Stored(val snapshot: ScheduleSnapshot?)
  * The current time, then again at each minute boundary. State changes (starts, the end of the "now"
  * phase, midnight) fall on whole minutes in practice, so the view switches on time.
  */
-private fun minuteTicks(clock: Clock): Flow<Instant> = flow {
+private fun minuteTicks(): Flow<Instant> = flow {
   while (true) {
-    val now = clock.instant()
+    val now = Instant.now()
     emit(now)
     delay(MINUTE_MILLIS - now.toEpochMilli() % MINUTE_MILLIS)
   }

@@ -19,12 +19,11 @@ class ScheduleListenerService : WearableListenerService() {
         }
         .mapNotNull { it.dataItem.data }
     // Runs on a binder worker thread; blocking keeps the service alive until the write lands.
-    val changed = runBlocking {
-      payloads.map { bytes ->
+    runBlocking {
+      payloads.forEach { bytes ->
         logSnapshot("received", bytes)
         graph.snapshots.save(bytes)
       }
     }
-    if (changed.any { it }) graph.complicationUpdater.requestUpdateAll()
   }
 }

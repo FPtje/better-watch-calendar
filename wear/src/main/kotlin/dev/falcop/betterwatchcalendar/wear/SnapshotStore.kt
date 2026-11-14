@@ -15,27 +15,35 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 
-/** The last snapshot received from the phone, or null before the first one. */
-class SnapshotStore(private val store: DataStore<ScheduleSnapshot?>) {
+/**
+ * The last snapshot received from the phone, or null before the first one. Calls [onChanged] after
+ * each save that changes it.
+ */
+class SnapshotStore(
+  private val store: DataStore<ScheduleSnapshot?>,
+  private val onChanged: () -> Unit,
+) {
   val snapshot: Flow<ScheduleSnapshot?> = store.data
 
   suspend fun current(): ScheduleSnapshot? = snapshot.first()
 
   /**
-   * Decodes and stores a Data Layer payload. Returns whether the stored snapshot changed; bad or
-   * unknown-version payloads are logged and ignored so the last good snapshot stays in use.
+   * Decodes and stores a Data Layer payload. Bad or unknown-version payloads are logged and ignored
+   * so the last good snapshot stays in use.
    */
-  suspend fun save(bytes: ByteArray): Boolean {
+  suspend fun save(bytes: ByteArray) {
     val decoded =
-      decodeSnapshot(bytes).onLeft { Log.w(TAG, "ignoring snapshot: $it") }.getOrNull()
-        ?: return false
-    val previous = store.data.first()
-    store.updateData { decoded }
-    return previous != decoded
+      decodeSnapshot(bytes).onLeft { Log.w(TAG, "ignoring snapshot: $it") }.getOrNull() ?: return
+    var changed = false
+    store.updateData {
+      changed = it != decoded
+      decoded
+    }
+    if (changed) onChanged()
   }
 
   /** Catches up on a snapshot delivered while the listener wasn't running. */
-  suspend fun refreshFrom(dataClient: DataClient): Boolean {
+  suspend fun refreshFrom(dataClient: DataClient) {
     val uri = Uri.Builder().scheme("wear").path(ScheduleProtocol.PATH).build()
     val items = dataClient.getDataItems(uri).await()
     val bytes =
@@ -44,7 +52,7 @@ class SnapshotStore(private val store: DataStore<ScheduleSnapshot?>) {
       } finally {
         items.release()
       }
-    return bytes != null && save(bytes)
+    if (bytes != null) save(bytes)
   }
 }
 

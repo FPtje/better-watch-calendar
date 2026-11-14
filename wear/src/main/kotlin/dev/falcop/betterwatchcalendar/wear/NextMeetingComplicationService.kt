@@ -63,7 +63,7 @@ private fun detailIntent(context: Context): PendingIntent =
     context,
     0,
     Intent(context, MainActivity::class.java),
-    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+    PendingIntent.FLAG_IMMUTABLE,
   )
 
 private fun ComplicationContent.toData(tap: PendingIntent?): ShortTextComplicationData =
