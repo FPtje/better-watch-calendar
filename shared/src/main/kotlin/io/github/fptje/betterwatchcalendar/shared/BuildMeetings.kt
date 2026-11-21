@@ -14,7 +14,7 @@ enum class SkipReason {
 }
 
 /** Returns why [instance] should be skipped, or null if it is a real meeting. */
-fun skipReason(
+internal fun skipReason(
   instance: RawInstance,
   calendar: RawCalendar,
   attendees: List<RawAttendee>,
@@ -29,21 +29,10 @@ fun skipReason(
     else -> null
   }
 
-/**
- * Turns provider rows into the meetings the watch shows: filtered, deduplicated, normalized and
- * sorted by [MeetingOrder]. Instances whose calendar is not in [calendars] are dropped, so the
- * caller passes only the calendars the user included.
- */
-fun buildMeetings(
-  calendars: List<RawCalendar>,
-  instances: List<RawInstance>,
-  attendees: List<RawAttendee>,
-): List<Meeting> = buildReport(calendars, instances, attendees).meetings.map { it.meeting }
-
 /** A built meeting plus the account whose copy survived deduplication. */
 data class SourcedMeeting(val meeting: Meeting, val accountName: String)
 
-/** [buildMeetings] with the counts the phone's debug log shows. */
+/** The result of [buildReport], with the counts the phone's debug log shows. */
 data class BuildReport(
   val meetings: List<SourcedMeeting>,
   /** Every account in the input calendars, including those left with no meetings. */
@@ -53,6 +42,11 @@ data class BuildReport(
   val duplicates: Int,
 )
 
+/**
+ * Turns provider rows into the meetings the watch shows: filtered, deduplicated, normalized and
+ * sorted by [MeetingOrder]. Instances whose calendar is not in [calendars] are dropped, so the
+ * caller passes only the calendars the user included.
+ */
 fun buildReport(
   calendars: List<RawCalendar>,
   instances: List<RawInstance>,
@@ -94,7 +88,7 @@ fun buildReport(
 }
 
 /** Shown when an event has no title, matching Google Calendar. */
-const val UNTITLED = "(No title)"
+internal const val UNTITLED = "(No title)"
 
 private data class Candidate(
   val instance: RawInstance,

@@ -1,13 +1,11 @@
 package io.github.fptje.betterwatchcalendar.mobile
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,10 +15,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
@@ -69,9 +65,12 @@ class MainActivity : ComponentActivity() {
   }
 }
 
-fun hasCalendarPermission(context: Context): Boolean =
+private fun hasCalendarPermission(context: Context): Boolean =
   ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) ==
     PackageManager.PERMISSION_GRANTED
+
+/** `package:<this app>`, which the per-app Settings screens expect. */
+fun packageUri(context: Context): Uri = Uri.fromParts("package", context.packageName, null)
 
 @Composable
 private fun App() {
@@ -116,57 +115,11 @@ private fun PermissionScreen(onGrant: () -> Unit) {
       TextButton(
         onClick = {
           context.startActivity(
-            Intent(
-              Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-              Uri.fromParts("package", context.packageName, null),
-            )
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri(context))
           )
         }
       ) {
         Text("Open app settings")
-      }
-    }
-  }
-}
-
-fun isIgnoringBatteryOptimizations(context: Context): Boolean =
-  context
-    .getSystemService(PowerManager::class.java)
-    .isIgnoringBatteryOptimizations(context.packageName)
-
-/**
- * Asks for the battery optimization exemption (SPEC P9). An app nobody opens sinks to the RARE
- * standby bucket, where job quota holds the 15-minute sync back for hours.
- */
-@SuppressLint("BatteryLife")
-@Composable
-private fun BatteryOptimizationBanner() {
-  val context = LocalContext.current
-  var exempt by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
-  // Re-checked on resume: the result of the system dialog arrives that way, and the exemption
-  // can be revoked from Settings.
-  LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-    exempt = isIgnoringBatteryOptimizations(context)
-  }
-  if (exempt) return
-  Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      Text("Background sync is limited", style = MaterialTheme.typography.titleMedium)
-      Text(
-        "Android delays background work of apps you rarely open, so your watch can miss " +
-          "calendar changes for hours. Allow unrestricted battery use to sync every 15 minutes."
-      )
-      Button(
-        onClick = {
-          context.startActivity(
-            Intent(
-              Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-              Uri.fromParts("package", context.packageName, null),
-            )
-          )
-        }
-      ) {
-        Text("Allow")
       }
     }
   }

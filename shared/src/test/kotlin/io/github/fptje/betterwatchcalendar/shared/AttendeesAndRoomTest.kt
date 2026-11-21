@@ -1,7 +1,6 @@
 package io.github.fptje.betterwatchcalendar.shared
 
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
 class AttendeesAndRoomTest :
@@ -55,7 +54,7 @@ class AttendeesAndRoomTest :
 
       test("otherwise empty") {
         resolveRoom(emptyList(), null, "Just a chat") shouldBe ""
-        detectConference("").shouldBeNull()
+        resolveRoom(emptyList(), null, null) shouldBe ""
       }
     }
   })

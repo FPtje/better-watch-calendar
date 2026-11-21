@@ -12,7 +12,7 @@ class BuildMeetingsTest :
       instances: List<RawInstance>,
       attendees: List<RawAttendee>,
       calendars: List<RawCalendar> = listOf(work, personal),
-    ) = buildMeetings(calendars, instances, attendees)
+    ) = buildReport(calendars, instances, attendees).meetings.map { it.meeting }
 
     context("skipping") {
       test("cancelled") {

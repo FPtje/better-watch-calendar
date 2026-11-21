@@ -1,10 +1,10 @@
 package io.github.fptje.betterwatchcalendar.shared
 
 /** Target payload size; the Data Layer's hard limit is 100 KB. */
-const val SNAPSHOT_BUDGET_BYTES = 80_000
+internal const val SNAPSHOT_BUDGET_BYTES = 80_000
 
 /** Upcoming meetings that always keep their description and attendees. */
-const val FULL_DETAIL_COUNT = 3
+internal const val FULL_DETAIL_COUNT = 3
 
 /**
  * Shrinks [snapshot] until [sizeOf] is within [budgetBytes]: first strips descriptions and

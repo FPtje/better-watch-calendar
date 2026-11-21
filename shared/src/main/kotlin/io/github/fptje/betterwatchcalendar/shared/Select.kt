@@ -4,17 +4,17 @@ import java.time.Duration
 import java.time.Instant
 
 /** How long a started meeting stays on the complication instead of the next one. */
-val CURRENT_WINDOW: Duration = Duration.ofMinutes(10)
+internal val CURRENT_WINDOW: Duration = Duration.ofMinutes(10)
 
 /** How far ahead the watch looks for the next meeting. */
 val LOOKAHEAD: Duration = Duration.ofDays(7)
 
 /** Canonical meeting order: by start, then end, then id. */
-val MeetingOrder: Comparator<Meeting> =
+internal val MeetingOrder: Comparator<Meeting> =
   compareBy<Meeting> { it.start }.thenBy { it.end }.thenBy { it.id }
 
 /** Which meetings the watch shows at a given moment. */
-sealed interface Selection {
+internal sealed interface Selection {
   /** Nothing starts within the lookahead. */
   data object Free : Selection
 
@@ -31,7 +31,7 @@ sealed interface Selection {
 }
 
 /** Lookahead-limited choice of the current (or else next) meeting and the one after it. */
-fun select(events: List<Meeting>, now: Instant): Selection {
+internal fun select(events: List<Meeting>, now: Instant): Selection {
   val t = now.toEpochMilli()
   val horizon = t + LOOKAHEAD.toMillis()
   val sorted = events.sortedWith(MeetingOrder)

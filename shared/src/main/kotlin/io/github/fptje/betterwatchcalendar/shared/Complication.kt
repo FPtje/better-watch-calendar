@@ -37,10 +37,10 @@ data class ComplicationContent(
   val contentDescription: String,
 )
 
-const val NO_TIME = "—"
+private const val NO_TIME = "—"
 
 /** Complication content at [now]. A missing or expired snapshot reads "sync", never "free". */
-fun complicationContent(
+internal fun complicationContent(
   snapshot: ScheduleSnapshot?,
   now: Instant,
   format: TimeFormat,
@@ -80,7 +80,7 @@ fun complicationContent(
  * The owner's name, left out of the complication title: it is in nearly every 1:1 title. TODO if I
  * ever want to release this: make this a setting in the Android app.
  */
-const val OWN_NAME = "Falco"
+private const val OWN_NAME = "Falco"
 
 private val ownNameSegment =
   Regex(
@@ -98,7 +98,7 @@ internal fun shortTitle(title: String): String = title.replace(ownNameSegment, "
  * Within this time a bare clock time is unambiguous, so a meeting tomorrow morning shows `10:00`
  * instead of `Wed`.
  */
-val CLOCK_WINDOW: Duration = Duration.ofHours(24)
+private val CLOCK_WINDOW: Duration = Duration.ofHours(24)
 
 /** Today's meetings always show a time, even on a 25-hour DST day. */
 private fun showsClock(m: Meeting, now: Instant, today: Boolean): Boolean =
@@ -112,7 +112,7 @@ val TIMELINE_HORIZON: Duration = Duration.ofHours(24)
  * the end of its "now" phase, when it enters the [LOOKAHEAD], when it enters the [CLOCK_WINDOW],
  * and each local midnight (the description drops the weekday).
  */
-fun complicationTransitions(
+internal fun complicationTransitions(
   meetings: List<Meeting>,
   now: Instant,
   zone: ZoneId,

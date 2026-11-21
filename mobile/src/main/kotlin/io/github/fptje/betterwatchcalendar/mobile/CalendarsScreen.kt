@@ -142,8 +142,3 @@ private fun CalendarRow(calendar: CalendarInfo, checked: Boolean, onToggle: ((Bo
     Switch(checked = checked, onCheckedChange = onToggle, enabled = onToggle != null)
   }
 }
-
-@Composable
-fun Message(text: String) {
-  Text(text, Modifier.padding(24.dp))
-}

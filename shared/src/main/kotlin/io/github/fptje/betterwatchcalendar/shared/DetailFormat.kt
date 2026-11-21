@@ -4,17 +4,17 @@ import java.time.Duration
 import java.time.Instant
 
 /** `10:30–11:15`, prefixed with the weekday (`Tue 10:30–11:15`) when it doesn't start today. */
-fun meetingTimeRange(meeting: Meeting, now: Instant, format: TimeFormat): String {
+internal fun meetingTimeRange(meeting: Meeting, now: Instant, format: TimeFormat): String {
   val range = "${format.clock.at(meeting.start)}–${format.clock.at(meeting.end)}"
   return if (format.date(meeting.start) == format.date(now)) range
   else "${format.weekday.at(meeting.start)} $range"
 }
 
 /** Label for attendees beyond the shown list, or null when everyone is listed. */
-fun moreAttendeesLabel(more: Int): String? = if (more > 0) "+$more more" else null
+internal fun moreAttendeesLabel(more: Int): String? = if (more > 0) "+$more more" else null
 
 /** After this, the detail footer warns that the phone hasn't synced. */
-val STALE_AFTER: Duration = Duration.ofHours(1)
+private val STALE_AFTER: Duration = Duration.ofHours(1)
 
 data class SyncFooter(
   /** `Synced 14:02`, or `Synced Mon 14:02` when not today. */
@@ -23,7 +23,7 @@ data class SyncFooter(
   val staleWarning: String?,
 )
 
-fun syncFooter(syncedAt: Long, now: Instant, format: TimeFormat): SyncFooter {
+internal fun syncFooter(syncedAt: Long, now: Instant, format: TimeFormat): SyncFooter {
   val time = format.clock.at(syncedAt)
   val label =
     if (format.date(syncedAt) == format.date(now)) "Synced $time"
@@ -54,7 +54,7 @@ data class MeetingCard(
 )
 
 const val WAITING_FOR_PHONE = "Waiting for phone… open Better Watch Calendar on your phone"
-const val NO_MEETINGS = "No meetings in the next 7 days"
+internal const val NO_MEETINGS = "No meetings in the next 7 days"
 
 /** What the detail view shows at a given moment. */
 sealed interface DetailContent {

@@ -54,7 +54,7 @@ The phone does all reading and cleaning. The watch only picks which meeting to s
 time, so it keeps working from the last snapshot when the phone is out of range.
 
 `:shared` is plain Kotlin/JVM and holds nearly all logic as pure functions, each with its own test
-spec: `buildMeetings` (skip rules, dedup, room, attendees), `cleanDescription`, `select`,
+spec: `buildReport` (skip rules, dedup, room, attendees), `cleanDescription`, `select`,
 `complicationContent` / `complicationTransitions`, the detail-view formatters, and `fitToBudget`.
 The apps only map Android types in and out.
 

@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /** How far back instances are read, so a meeting that just started is still in the snapshot. */
-val LOOKBEHIND: Duration = Duration.ofHours(1)
+private val LOOKBEHIND: Duration = Duration.ofHours(1)
 
 /** Reads the included calendars, pushes a snapshot to the watch, and records the attempt. */
 suspend fun AppGraph.sync(trigger: SyncTrigger, clock: Clock): SyncLogEntry {

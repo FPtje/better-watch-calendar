@@ -1,12 +1,12 @@
 package io.github.fptje.betterwatchcalendar.shared
 
-const val MAX_DESCRIPTION_LENGTH = 2000
+internal const val MAX_DESCRIPTION_LENGTH = 2000
 
 /**
  * Plain text for the watch: HTML converted, conferencing boilerplate removed (the room line already
  * says "Google Meet" etc.), blank lines collapsed, and capped at [maxLength] characters.
  */
-fun cleanDescription(raw: String, maxLength: Int = MAX_DESCRIPTION_LENGTH): String =
+internal fun cleanDescription(raw: String, maxLength: Int = MAX_DESCRIPTION_LENGTH): String =
   raw.let(::htmlToText).let(::removeConferencingBoilerplate).let(::collapseBlankLines).let {
     truncate(it, maxLength)
   }

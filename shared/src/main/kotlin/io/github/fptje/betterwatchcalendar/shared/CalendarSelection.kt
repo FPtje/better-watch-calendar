@@ -19,7 +19,7 @@ data class CalendarInfo(
 /** The user's explicit toggles; calendars without one fall back to [defaultIncluded]. */
 typealias CalendarOverrides = Map<CalendarId, Boolean>
 
-fun defaultIncluded(calendar: CalendarInfo): Boolean = calendar.isPrimary
+private fun defaultIncluded(calendar: CalendarInfo): Boolean = calendar.isPrimary
 
 /** What the toggle shows. Unsynced calendars still show their setting, greyed out. */
 fun toggleState(calendar: CalendarInfo, overrides: CalendarOverrides): Boolean =

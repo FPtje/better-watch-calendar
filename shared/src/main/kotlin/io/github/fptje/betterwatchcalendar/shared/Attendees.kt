@@ -1,15 +1,15 @@
 package io.github.fptje.betterwatchcalendar.shared
 
 /** Display names of the other attendees, plus how many didn't fit. */
-data class AttendeeList(val names: List<String>, val more: Int)
+internal data class AttendeeList(val names: List<String>, val more: Int)
 
-const val MAX_ATTENDEES = 30
+internal const val MAX_ATTENDEES = 30
 
 /**
  * Names of everyone except the user ([ownerAccount]) and room resources: organizer first, then
  * accepted, then alphabetical. Falls back to the email address when there is no name.
  */
-fun attendeeList(
+internal fun attendeeList(
   attendees: List<RawAttendee>,
   ownerAccount: String,
   cap: Int = MAX_ATTENDEES,
