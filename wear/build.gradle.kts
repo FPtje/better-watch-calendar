@@ -7,14 +7,14 @@ plugins {
 }
 
 android {
-  namespace = "dev.falcop.betterwatchcalendar.wear"
+  namespace = "io.github.fptje.betterwatchcalendar.wear"
   compileSdk = libs.versions.compileSdk.get().toInt()
   buildToolsVersion = libs.versions.buildTools.get()
 
   defaultConfig {
     // Must equal :mobile's applicationId; the Data Layer only connects apps with the same id and
     // key.
-    applicationId = "dev.falcop.betterwatchcalendar"
+    applicationId = "io.github.fptje.betterwatchcalendar"
     minSdk = libs.versions.minSdk.get().toInt()
     targetSdk = libs.versions.targetSdk.get().toInt()
     versionCode = 1

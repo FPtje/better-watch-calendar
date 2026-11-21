@@ -1,5 +1,5 @@
 # Both APKs share one applicationId (Data Layer requirement).
-app_id := "dev.falcop.betterwatchcalendar"
+app_id := "io.github.fptje.betterwatchcalendar"
 
 default:
     @just --list
