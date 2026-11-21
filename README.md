@@ -2,7 +2,23 @@
 
 A Wear OS + Android pair of apps that shows the next meeting on the watch face.
 
+<p>
+  <img src="docs/screenshots/watch-face.png" alt="Watch face with the next-meeting complication" width="220">
+  <img src="docs/screenshots/watch-detail.png" alt="Detail view on the watch: the next two meetings" width="220">
+  <img src="docs/screenshots/watch-detail-expanded.png" alt="Detail view with a meeting expanded: agenda and attendees" width="220">
+  <img src="docs/screenshots/phone-calendars.png" alt="Calendars screen of the phone app" width="200">
+</p>
+
 See [SPEC.md](SPEC.md) for the original design.
+
+## Install
+
+Check out the releases tab for the phone and Watch APKs. For now, these are not released on any marketplace, so please install them manually through ADB.
+
+## Maintenance status
+
+This is _Personal software_, meaning that the main audience for this software is myself. Feel free to try it out, fork it, play with it.
+If you do hit a problem or would like to request a feature, feel free to still write a quick issue. I will consider maintaining it properly if there is interest.
 
 ## Setup
 
@@ -59,10 +75,10 @@ spec: `buildReport` (skip rules, dedup, room, attendees), `cleanDescription`, `s
 The apps only map Android types in and out.
 
 On the phone, `CalendarReader` maps `CalendarContract` cursors to `:shared` types, and `SyncWorker`
-(WorkManager: app open, toggle changes, *Sync now*, every 15 minutes, and a content-URI trigger on
+(WorkManager: app open, toggle changes, _Sync now_, every 15 minutes, and a content-URI trigger on
 the calendar database) runs `sync()`. The content-URI trigger fires once per request, so each run
 arms the next one, alternating between two unique work names so changes made during a sync are not
-missed. *Sync now* also calls `ContentResolver.requestSync` for each Google account the user has
+missed. _Sync now_ also calls `ContentResolver.requestSync` for each Google account the user has
 picked in the account chooser (Android ignores it for accounts the app can't see). That reads
 the included calendars, builds the snapshot, sends it, and appends to the debug log (DataStore, last
 100 attempts). Calendar toggles are stored only for calendars the user changed, so new calendars get
@@ -78,7 +94,7 @@ waking the app. Time zone, clock, and locale changes rebuild the timeline, and a
 as a safety net. Tapping the complication opens `MainActivity`, the detail view: `detailContent`
 picks the same meeting plus the one after it, and `DetailScreen` lays them out in a rotary-scrollable
 `TransformingLazyColumn` with a sync footer that warns when the snapshot is over an hour old. To use
-it, long-press the watch face → *Edit* → pick a complication slot → *Better
-Watch Calendar* → *Next meeting*.
+it, long-press the watch face → _Edit_ → pick a complication slot → _Better
+Watch Calendar_ → _Next meeting_.
 
 [nix-direnv]: https://github.com/nix-community/nix-direnv
