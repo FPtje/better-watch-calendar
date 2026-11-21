@@ -13,7 +13,7 @@ See [SPEC.md](SPEC.md) for the original design.
 
 ## Install
 
-Check out the releases tab for the phone and Watch APKs. For now, these are not released on any marketplace, so please install them manually through ADB.
+Check out the [releases tab](https://github.com/FPtje/better-watch-calendar/releases) for the phone and Watch APKs. For now, these are not released on any marketplace, so please install them manually through ADB.
 
 ## Maintenance status
 
