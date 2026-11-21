@@ -13,6 +13,7 @@ import io.github.fptje.betterwatchcalendar.shared.isIncluded
 import java.time.Clock
 import java.time.Duration
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 /** How far back instances are read, so a meeting that just started is still in the snapshot. */
@@ -38,6 +39,7 @@ suspend fun AppGraph.sync(trigger: SyncTrigger, clock: Clock): SyncLogEntry {
               syncedAt = now,
               windowEnd = windowEnd,
               meetings = report.meetings.map { it.meeting },
+              titleFilter = settings.titleFilter.first(),
             )
           )
         val sent = sendSnapshot(dataClient, snapshot)

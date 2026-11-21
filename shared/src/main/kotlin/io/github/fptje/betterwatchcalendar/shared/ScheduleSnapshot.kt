@@ -14,6 +14,11 @@ data class ScheduleSnapshot(
   @ProtoNumber(3) val windowEnd: Long,
   /** Filtered, deduplicated, sorted by start. */
   @ProtoNumber(4) val meetings: List<Meeting>,
+  /**
+   * Regex whose matches are removed from complication titles (see [shortTitle]); blank for none.
+   * Added without a version bump: older snapshots decode with the default.
+   */
+  @ProtoNumber(5) val titleFilter: String = "",
 )
 
 @Serializable

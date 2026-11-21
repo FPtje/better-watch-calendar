@@ -1,5 +1,6 @@
 package io.github.fptje.betterwatchcalendar.shared
 
+import arrow.core.right
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.collections.shouldContainExactly
@@ -99,14 +100,25 @@ class ComplicationTest :
         "Next meeting: Chat at 10:00"
     }
 
-    test("own name is left out of the title, but not the description") {
-      val oneOnOne = meeting(at(10), title = "Falco / Anna sync")
-      complicationContent(snapshotOf(oneOnOne), at(9), format24) shouldBe
+    val ownName = DEFAULT_TITLE_FILTER.replace("your_name_here", "Falco")
+
+    test("the title filter shortens the title, but not the description") {
+      val oneOnOne = snapshotOf(meeting(at(10), title = "Falco / Anna sync"), titleFilter = ownName)
+      complicationContent(oneOnOne, at(9), format24) shouldBe
         ComplicationContent("10:00", "Anna sync", "Next meeting: Falco / Anna sync at 10:00")
-      complicationContent(snapshotOf(oneOnOne), at(10, 5), format24).title shouldBe "Anna sync"
+      complicationContent(oneOnOne, at(10, 5), format24).title shouldBe "Anna sync"
+      complicationTimeline(oneOnOne, at(9), format24).first().content.title shouldBe "Anna sync"
     }
 
-    context("short title") {
+    test("a blank or invalid title filter leaves the title alone") {
+      listOf("", "(unclosed").forEach { pattern ->
+        val m = snapshotOf(meeting(at(10), title = "Falco / Anna"), titleFilter = pattern)
+        complicationContent(m, at(9), format24).title shouldBe "Falco / Anna"
+      }
+    }
+
+    context("short title with the default filter, name filled in") {
+      val filter = compileTitleFilter(ownName).getOrNull()
       withData(
         "Falco / Anna" to "Anna",
         "falco/anna 1:1" to "anna 1:1",
@@ -118,7 +130,24 @@ class ComplicationTest :
         "Anna / Falco / Bob" to "Anna / Falco / Bob",
         "Lunch with Falco" to "Lunch with Falco",
       ) { (title, expected) ->
-        shortTitle(title) shouldBe expected
+        shortTitle(title, filter) shouldBe expected
+      }
+    }
+
+    test("a filter that matches everything falls back to the full title") {
+      shortTitle("Standup", Regex(".*")) shouldBe "Standup"
+    }
+
+    test("the default filter changes nothing until a name is filled in") {
+      shortTitle("Falco / Anna", compileTitleFilter(DEFAULT_TITLE_FILTER).getOrNull()) shouldBe
+        "Falco / Anna"
+    }
+
+    context("compile title filter") {
+      test("blank is no filter") { compileTitleFilter("  ") shouldBe null.right() }
+      test("syntax errors carry the position") {
+        compileTitleFilter("ab(c").leftOrNull()?.index shouldBe 4
+        compileTitleFilter("*a").leftOrNull()?.index shouldBe 0
       }
     }
 

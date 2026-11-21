@@ -12,6 +12,9 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.long
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoBuf
+import kotlinx.serialization.protobuf.ProtoNumber
 
 private val meetingArb = arbitrary {
   Meeting(
@@ -32,8 +35,18 @@ private val snapshotArb = arbitrary {
     syncedAt = Arb.long().bind(),
     windowEnd = Arb.long().bind(),
     meetings = Arb.list(meetingArb, 0..10).bind(),
+    titleFilter = Arb.string(0..60).bind(),
   )
 }
+
+/** The snapshot as it was before `titleFilter`, to check that old payloads still decode. */
+@Serializable
+private data class SnapshotV1Fields(
+  @ProtoNumber(1) val schemaVersion: Int,
+  @ProtoNumber(2) val syncedAt: Long,
+  @ProtoNumber(3) val windowEnd: Long,
+  @ProtoNumber(4) val meetings: List<Meeting>,
+)
 
 class ScheduleProtocolTest :
   FunSpec({
@@ -41,6 +54,12 @@ class ScheduleProtocolTest :
       checkAll(snapshotArb) { snapshot ->
         decodeSnapshot(snapshot.encode()) shouldBe snapshot.right()
       }
+    }
+
+    test("a snapshot without a title filter decodes with a blank one") {
+      val old = SnapshotV1Fields(ScheduleProtocol.SCHEMA_VERSION, 1, 2, emptyList())
+      val bytes = ProtoBuf.encodeToByteArray(SnapshotV1Fields.serializer(), old)
+      decodeSnapshot(bytes).map { it.titleFilter } shouldBe "".right()
     }
 
     test("unknown schema versions are rejected") {

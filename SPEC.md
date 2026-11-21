@@ -70,6 +70,7 @@ The phone does all reading, filtering, and cleaning. It pushes a self-contained 
 | P7 | After each successful read, push a `ScheduleSnapshot` to the watch (§5). |
 | P8 | A **debug log screen** shows the last 100 sync attempts: timestamp, trigger, per-account event count, payload size, and errors. |
 | P9 | The app asks for the **battery optimization exemption** (`ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) with a banner on the main screen until it is granted. A rarely opened app falls into the RARE standby bucket, where job quota held the periodic sync back for hours (observed 2026-10-20: none between 09:11 and 13:58). The exemption puts the app in the EXEMPTED bucket and lets its jobs run during Doze. |
+| P10 | A **Settings** tab (between Calendars and Debug log) holds the **complication title filter**: a regular expression whose matches are removed from the complication's title (§3.4). The default strips a leading `your_name_here / ` or trailing ` / your_name_here`, case-insensitively, for 1:1 titles; the user puts in their own name. As the user types, the tab shows the next 5 meetings of the latest successful sync before and after filtering, or the syntax error with its position when the pattern doesn't compile. **Save** is disabled while the pattern is invalid or unchanged; it stores the pattern and syncs, and the pattern travels to the watch in the snapshot (§5). |
 
 ### 3.2 Reading, filtering, and normalization (phone)
 
@@ -136,6 +137,7 @@ The same meeting can appear in more than one account or calendar, for example wh
   | Nothing in 7 days / empty snapshot | `—` | `free` |
   | No snapshot ever received, or `now ≥ windowEnd` | `—` | `sync` |
 
+- The meeting name in `title` has the title filter (P10) applied; nothing else does.
 - `contentDescription` (screen reader) carries the full text, for example *"Next meeting: Design review at 10:30 in Orion"*.
 - **Tap action** opens the detail activity.
 - **Updates:** use a **timeline complication** (`ComplicationDataTimeline`) with an entry for every state transition for the next 24 hours: each `start`, each `min(start + 10 min, end)`, each `start − 7 d` (when a meeting comes into the lookahead), each `start − 24 h` (when `Tue` turns into `10:30`), and each local midnight (the same, on a 25-hour DST day). The watch face then switches state on time without waking the app. Each request also sets an exact alarm at the next transition that requests an update again, because a watch face that falls back to the timeline's default data (the state at the last request, such as `now`) would otherwise keep showing it until the next sync. The timeline is rebuilt whenever a new snapshot arrives (via `ComplicationDataSourceUpdateRequester`), on time zone or time changes, and periodically with `UPDATE_PERIOD_SECONDS = 3600` as a safety net.
@@ -191,6 +193,7 @@ The staleness indicator appears **only** in the detail view, never on the compli
     val syncedAt: Long,                // epoch millis
     val windowEnd: Long,               // epoch millis; selection beyond this is "unknown", not "free"
     val meetings: List<Meeting>,       // filtered, deduped, sorted by start
+    val titleFilter: String = "",      // P10 regex, applied on the watch; added without a version bump
 )
 
 @Serializable data class Meeting(

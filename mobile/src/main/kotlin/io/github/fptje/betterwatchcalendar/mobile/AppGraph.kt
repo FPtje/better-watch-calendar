@@ -27,7 +27,7 @@ class AppGraph(val context: Context) {
   val resolver: ContentResolver = context.contentResolver
   val dataClient: DataClient = Wearable.getDataClient(context)
   val workManager: WorkManager = WorkManager.getInstance(context)
-  val settings = CalendarSettings(context.settingsStore)
+  val settings = AppSettings(context.settingsStore)
   val log = SyncLog(context.logStore)
 }
 

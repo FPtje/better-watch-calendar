@@ -147,10 +147,12 @@ private fun MainScreen() {
       AccountAccessBanner()
       PrimaryTabRow(selectedTabIndex = tab) {
         Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Calendars") })
-        Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Debug log") })
+        Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Settings") })
+        Tab(selected = tab == 2, onClick = { tab = 2 }, text = { Text("Debug log") })
       }
       when (tab) {
         0 -> CalendarsScreen()
+        1 -> SettingsScreen()
         else -> LogScreen()
       }
     }

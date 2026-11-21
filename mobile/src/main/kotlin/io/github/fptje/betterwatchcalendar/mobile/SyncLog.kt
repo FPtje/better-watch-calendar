@@ -20,6 +20,8 @@ enum class SyncTrigger {
   Manual,
   /** The content-URI trigger: something in the calendar database changed (SPEC P5a). */
   CalendarChange,
+  /** Saved from the Settings tab. */
+  SettingsChange,
 }
 
 @Serializable

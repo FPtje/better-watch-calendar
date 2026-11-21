@@ -44,6 +44,7 @@ internal fun complicationContent(
   snapshot: ScheduleSnapshot?,
   now: Instant,
   format: TimeFormat,
+  filter: Regex? = snapshot?.compiledTitleFilter(),
 ): ComplicationContent {
   if (snapshot == null || now.toEpochMilli() >= snapshot.windowEnd) {
     return ComplicationContent(NO_TIME, "sync", "Waiting for the phone to sync")
@@ -54,7 +55,7 @@ internal fun complicationContent(
       val m = selection.meeting
       ComplicationContent(
         text = "now",
-        title = shortTitle(m.title),
+        title = shortTitle(m.title, filter),
         contentDescription =
           "Current meeting: ${m.title}, started at ${format.spokenClock.at(m.start)}${m.inRoom()}",
       )
@@ -66,7 +67,7 @@ internal fun complicationContent(
       ComplicationContent(
         text =
           if (showsClock(m, now, today)) format.clock.at(m.start) else format.weekday.at(m.start),
-        title = shortTitle(m.title),
+        title = shortTitle(m.title, filter),
         contentDescription =
           if (today) "Next meeting: ${m.title} at $time${m.inRoom()}"
           else
@@ -75,24 +76,6 @@ internal fun complicationContent(
     }
   }
 }
-
-/**
- * The owner's name, left out of the complication title: it is in nearly every 1:1 title. TODO if I
- * ever want to release this: make this a setting in the Android app.
- */
-private const val OWN_NAME = "Falco"
-
-private val ownNameSegment =
-  Regex(
-    "^\\s*${Regex.escape(OWN_NAME)}\\s*/\\s*|\\s*/\\s*${Regex.escape(OWN_NAME)}\\s*$",
-    RegexOption.IGNORE_CASE,
-  )
-
-/**
- * The title without a leading `Falco / ` or trailing ` / Falco`, so the few characters the
- * complication shows go to the other person. Only the title; the spoken description stays whole.
- */
-internal fun shortTitle(title: String): String = title.replace(ownNameSegment, "").ifBlank { title }
 
 /**
  * Within this time a bare clock time is unambiguous, so a meeting tomorrow morning shows `10:00`
@@ -158,8 +141,9 @@ fun complicationTimeline(
   val transitions =
     snapshot?.let { complicationTransitions(it.meetings, now, format.zone, horizon) }.orEmpty()
   val moments = (listOf(now) + transitions + listOfNotNull(windowEnd)).distinct().sorted()
+  val filter = snapshot?.compiledTitleFilter()
   return moments
-    .map { TimelineState(it, complicationContent(snapshot, it, format)) }
+    .map { TimelineState(it, complicationContent(snapshot, it, format, filter)) }
     .fold(emptyList()) { acc, state ->
       if (acc.lastOrNull()?.content == state.content) acc else acc + state
     }

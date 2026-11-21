@@ -40,12 +40,13 @@ fun meeting(
     moreAttendees = 0,
   )
 
-fun snapshotOf(vararg meetings: Meeting, syncedAt: Instant = at(8)) =
+fun snapshotOf(vararg meetings: Meeting, syncedAt: Instant = at(8), titleFilter: String = "") =
   ScheduleSnapshot(
     schemaVersion = ScheduleProtocol.SCHEMA_VERSION,
     syncedAt = syncedAt.toEpochMilli(),
     windowEnd = syncedAt.toEpochMilli() + LOOKAHEAD.toMillis(),
     meetings = meetings.sortedWith(MeetingOrder),
+    titleFilter = titleFilter,
   )
 
 val work = RawCalendar(CalendarId(29), accountName = "me@work.example", "me@work.example")
