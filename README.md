@@ -1,8 +1,8 @@
 # Better Watch Calendar
 
-A Wear OS complication that answers one question: **what is my next meeting?** The phone reads the
-Android calendar database, and the watch shows a snapshot pushed over the Data Layer. See
-[SPEC.md](SPEC.md) for the full design.
+A Wear OS + Android pair of apps that shows the next meeting on the watch face.
+
+See [SPEC.md](SPEC.md) for the original design.
 
 ## Setup
 
@@ -44,7 +44,7 @@ project's Gradle JDK is set to `JAVA_HOME` in `.idea/gradle.xml`.
 
 ## Architecture
 
-```
+```text
 :shared   Pure domain logic: snapshot schema, select(), filtering, cleaning, formatting
 :mobile   Phone: CalendarContract reader → SyncWorker → Data Layer sender, settings UI
 :wear     Watch: Data Layer receiver → DataStore → timeline complication + detail view
